@@ -26,6 +26,11 @@ server/.env.local
 server/.env.development
 server/.env.production
 !server/.env.example
+flask_server/.env
+flask_server/.env.local
+flask_server/.env.development
+flask_server/.env.production
+!flask_server/.env.example
 
 # IDE settings
 .vscode/
