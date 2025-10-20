@@ -30,9 +30,7 @@ allowed_origins = [
   'http://127.0.0.1:3000',
   'http://localhost:3001',
   'https://loopr-1.onrender.com',
-  'https://loopr.vercel.app',
   'https://major-project-btech-1.onrender.com',
-  'https://major-project-btech.onrender.com'
 ]
 
 # If a public base URL is set (e.g., http://192.168.1.60:5000),
