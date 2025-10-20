@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request, current_app, url_for
 import os
+import signal
 from database import get_db
 from models.user import User
 from werkzeug.security import check_password_hash
@@ -49,21 +50,34 @@ def register():
     else:
         verify_link = url_for('auth.verify_email', token=token, _external=True)
 
-    # Send verification email
+    # Send verification email (optional - don't fail registration if email fails)
     try:
-        # Use Flask-Mail instance from app extensions
         mail = current_app.extensions.get('mail')
-        msg = Message('Verify your email', recipients=[email])
-        msg.body = f"Welcome to Finance Dashboard, {name}!\n\nClick this link to verify your email:\n{verify_link}\n\nThis link is valid for 1 hour."
-        if mail:
-            mail.send(msg)
+        if mail and current_app.config.get('MAIL_SERVER'):
+            msg = Message('Verify your email', recipients=[email])
+            msg.body = f"Welcome to Finance Dashboard, {name}!\n\nClick this link to verify your email:\n{verify_link}\n\nThis link is valid for 1 hour."
+            # Set timeout for email sending to prevent worker timeout
+            import signal
+            def timeout_handler(signum, frame):
+                raise TimeoutError("Email sending timeout")
+            
+            signal.signal(signal.SIGALRM, timeout_handler)
+            signal.alarm(5)  # 5 second timeout
+            
+            try:
+                mail.send(msg)
+                signal.alarm(0)  # Cancel timeout
+                return jsonify({'message': 'Registration successful. Check your email for verification link.', 'verify_link': verify_link}), 201
+            except (TimeoutError, Exception) as email_error:
+                signal.alarm(0)  # Cancel timeout
+                # Registration successful but email failed
+                return jsonify({'message': 'Registration successful. Email verification failed but you can still login.', 'verify_link': verify_link}), 201
         else:
-            raise RuntimeError('Mail extension not initialized')
+            # No email configuration - just return success
+            return jsonify({'message': 'Registration successful. Email verification disabled.', 'verify_link': verify_link}), 201
     except Exception as e:
-        # Do not fail registration if email fails; include verify_link for dev convenience
-        return jsonify({'message': 'User registered. Failed to send verification email.', 'verify_link': verify_link, 'email_error': str(e)}), 201
-
-    return jsonify({'message': 'Registration successful. Check your email for verification link.', 'verify_link': verify_link}), 201
+        # Registration successful but email failed
+        return jsonify({'message': 'Registration successful. Email verification failed but you can still login.', 'verify_link': verify_link}), 201
 
 @auth_bp.route('/api/auth/login', methods=['POST'])
 def login():
