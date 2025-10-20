@@ -78,9 +78,8 @@ def login():
     user = db.users.find_one({'email': email})
 
     if user and check_password_hash(user['password'], password):
-        # Skip email verification for now - allow login without verification
-        # if not user.get('is_verified', False):
-        #     return jsonify({'message': 'Please verify your email first'}), 403
+        if not user.get('is_verified', False):
+            return jsonify({'message': 'Please verify your email first'}), 403
         token = jwt.encode(
             {
                 'user_id': str(user['_id']),

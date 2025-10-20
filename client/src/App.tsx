@@ -9,6 +9,7 @@ import NotFound from './pages/NotFound';
 import Personal from './pages/Personal';
 import ProtectedRoute from './components/ProtectedRoute';
 import UploadTransactions from './pages/UploadTransactions';
+import VerifyEmail from './pages/VerifyEmail';
 
 import Analytics from './pages/Analytics';
 import Wallet from './pages/Wallet';
@@ -31,6 +32,7 @@ function App() {
           <Routes>
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/verify/:token" element={<VerifyEmail />} />
         <Route path="/dashboard" element={
           <ProtectedRoute>
             <Dashboard />
