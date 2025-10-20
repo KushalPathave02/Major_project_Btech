@@ -33,11 +33,17 @@ const handleSubmit = async (e: React.FormEvent) => {
       const data = await res.json();
       if (res.ok) {
         setSuccess(true);
-        if (data.verify_link) {
-          setVerifyLink(data.verify_link);
-        }
-        // Don't auto-redirect, let user verify email first
-        // setTimeout(() => navigate('/login'), 1000);
+        // Redirect to verification page with registration data
+        setTimeout(() => {
+          navigate('/verify-email', {
+            state: {
+              email: email,
+              name: name,
+              verify_link: data.verify_link,
+              message: data.message
+            }
+          });
+        }, 1500);
       } else {
         setError(data.message || 'Registration failed');
       }
@@ -130,25 +136,7 @@ const handleSubmit = async (e: React.FormEvent) => {
         {error && <div style={{ color: 'red', marginTop: 16, fontSize: 16, fontWeight: 500 }}>{error}</div>}
         {success && (
           <div style={{ color: 'green', marginTop: 16, fontSize: 16, fontWeight: 500 }}>
-            <p>Registration successful! Please verify your email to login.</p>
-            {verifyLink && (
-              <div style={{ marginTop: 12, padding: 12, background: 'rgba(124, 58, 237, 0.1)', borderRadius: 8 }}>
-                <p style={{ fontSize: 14, marginBottom: 8 }}>Click the link below to verify your email:</p>
-                <a 
-                  href={verifyLink} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  style={{ 
-                    color: '#7c3aed', 
-                    textDecoration: 'underline', 
-                    fontSize: 14,
-                    wordBreak: 'break-all'
-                  }}
-                >
-                  Verify Email
-                </a>
-              </div>
-            )}
+            <p>Registration successful! Redirecting to verification page...</p>
           </div>
         )}
         <div style={{ marginTop: 24, textAlign: 'center' }}>
