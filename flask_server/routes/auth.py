@@ -7,6 +7,7 @@ import jwt
 import datetime
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from flask_mail import Message
+from email_service import send_verification_email
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -49,14 +50,22 @@ def register():
     else:
         verify_link = url_for('auth.verify_email', token=token, _external=True)
 
-    # Send verification email - TEMPORARILY DISABLED FOR TESTING
+    # Send verification email using improved email service
     try:
-        # For now, just return success with verification link
-        return jsonify({
-            'message': 'Registration successful! Email verification temporarily disabled for testing.', 
-            'verify_link': verify_link,
-            'note': 'You can login directly without email verification for now.'
-        }), 201
+        success, message = send_verification_email(email, name, verify_link)
+        
+        if success:
+            return jsonify({
+                'message': 'Registration successful. Check your email for verification link.', 
+                'verify_link': verify_link
+            }), 201
+        else:
+            # Email failed but user is registered - return success with manual verification link
+            return jsonify({
+                'message': 'Registration successful! Email sending failed, but you can verify manually.',
+                'verify_link': verify_link,
+                'email_error': message
+            }), 201
         
     except Exception as e:
         # Do not fail registration if email fails; include verify_link for dev convenience
@@ -75,9 +84,12 @@ def login():
     user = db.users.find_one({'email': email})
 
     if user and check_password_hash(user['password'], password):
-        # Temporarily disable email verification requirement for testing
-        # if not user.get('is_verified', False):
-        #     return jsonify({'message': 'Please verify your email first'}), 403
+        # Check email verification status
+        if not user.get('is_verified', False):
+            return jsonify({
+                'message': 'Please verify your email first. Check your email or use the verification link from registration.',
+                'requires_verification': True
+            }), 403
         token = jwt.encode(
             {
                 'user_id': str(user['_id']),
