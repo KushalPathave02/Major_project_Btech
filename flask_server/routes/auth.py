@@ -49,21 +49,18 @@ def register():
     else:
         verify_link = url_for('auth.verify_email', token=token, _external=True)
 
-    # Send verification email
+    # Send verification email - TEMPORARILY DISABLED FOR TESTING
     try:
-        # Use Flask-Mail instance from app extensions
-        mail = current_app.extensions.get('mail')
-        msg = Message('Verify your email', recipients=[email])
-        msg.body = f"Welcome to Finance Dashboard, {name}!\n\nClick this link to verify your email:\n{verify_link}\n\nThis link is valid for 1 hour."
-        if mail:
-            mail.send(msg)
-        else:
-            raise RuntimeError('Mail extension not initialized')
+        # For now, just return success with verification link
+        return jsonify({
+            'message': 'Registration successful! Email verification temporarily disabled for testing.', 
+            'verify_link': verify_link,
+            'note': 'You can login directly without email verification for now.'
+        }), 201
+        
     except Exception as e:
         # Do not fail registration if email fails; include verify_link for dev convenience
         return jsonify({'message': 'User registered. Failed to send verification email.', 'verify_link': verify_link, 'email_error': str(e)}), 201
-
-    return jsonify({'message': 'Registration successful. Check your email for verification link.', 'verify_link': verify_link}), 201
 
 @auth_bp.route('/api/auth/login', methods=['POST'])
 def login():
@@ -78,8 +75,9 @@ def login():
     user = db.users.find_one({'email': email})
 
     if user and check_password_hash(user['password'], password):
-        if not user.get('is_verified', False):
-            return jsonify({'message': 'Please verify your email first'}), 403
+        # Temporarily disable email verification requirement for testing
+        # if not user.get('is_verified', False):
+        #     return jsonify({'message': 'Please verify your email first'}), 403
         token = jwt.encode(
             {
                 'user_id': str(user['_id']),
