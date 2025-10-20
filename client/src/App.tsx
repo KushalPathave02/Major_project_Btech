@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { CurrencyProvider } from './CurrencyContext';
+import { ThemeProvider } from './ThemeContext';
 
 import Register from './pages/Register';
 import Login from './pages/Login';
@@ -20,13 +21,14 @@ const LogoutButton = () => <button style={{ display: 'none' }}>Logout</button>;
 
 function App() {
   return (
-    <CurrencyProvider>
-      <Router>
-        {/* Place modals at root so they can be triggered from anywhere */}
-        <CSVExportModal />
-        <UploadFileModal />
-        <LogoutButton />
-        <Routes>
+    <ThemeProvider>
+      <CurrencyProvider>
+        <Router>
+          {/* Place modals at root so they can be triggered from anywhere */}
+          <CSVExportModal />
+          <UploadFileModal />
+          <LogoutButton />
+          <Routes>
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={
@@ -58,7 +60,8 @@ function App() {
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
-    </CurrencyProvider>
+      </CurrencyProvider>
+    </ThemeProvider>
   );
 }
 

@@ -18,9 +18,12 @@ const ThemeContext = createContext<{
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setTheme] = useState<ThemeMode>(() => {
-    // Try to get persisted theme from localStorage
+    // Force light theme as default for new users
     const stored = localStorage.getItem('theme');
-    // Default to light theme
+    if (!stored) {
+      localStorage.setItem('theme', 'light');
+      return 'light';
+    }
     return stored === 'dark' ? 'dark' : 'light';
   });
 
