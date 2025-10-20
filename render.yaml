@@ -1,0 +1,44 @@
+services:
+  # Flask Backend API
+  - type: web
+    name: financial-dashboard-api
+    runtime: python
+    buildCommand: cd flask_server && pip install -r requirements.txt
+    startCommand: cd flask_server && gunicorn app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: PORT
+        value: 10000
+      - key: MONGO_URI
+        sync: false
+      - key: SECRET_KEY
+        sync: false
+      - key: MAIL_SERVER
+        value: smtp.gmail.com
+      - key: MAIL_PORT
+        value: 587
+      - key: MAIL_USE_TLS
+        value: true
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASS
+        sync: false
+      - key: MAIL_DEFAULT_SENDER
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+
+  # React Frontend
+  - type: web
+    name: financial-dashboard-client
+    runtime: node
+    buildCommand: cd client && npm install && npm run build
+    staticPublishPath: ./client/build
+    envVars:
+      - key: NODE_VERSION
+        value: 18.17.0
+      - key: REACT_APP_API_URL
+        sync: false
