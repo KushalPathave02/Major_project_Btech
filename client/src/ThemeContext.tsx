@@ -20,6 +20,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setTheme] = useState<ThemeMode>(() => {
     // Try to get persisted theme from localStorage
     const stored = localStorage.getItem('theme');
+    // Default to light theme
     return stored === 'dark' ? 'dark' : 'light';
   });
 

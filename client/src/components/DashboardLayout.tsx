@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Box, Drawer, AppBar, Toolbar, Typography, List, ListItem, ListItemIcon, ListItemText, CssBaseline, Avatar, InputBase, IconButton, ThemeProvider, createTheme, Badge, Menu, ToggleButtonGroup, ToggleButton } from '@mui/material';
+import { Box, Drawer, AppBar, Toolbar, Typography, List, ListItem, ListItemIcon, ListItemText, CssBaseline, Avatar, InputBase, IconButton, ThemeProvider, createTheme, Badge, Menu, ToggleButtonGroup, ToggleButton, Button } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
@@ -33,6 +33,7 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
   const [avatarSrc, setAvatarSrc] = useState<string | undefined>(undefined);
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
   const { currency, setCurrency } = useCurrency();
+  const { theme, toggleTheme } = useTheme();
 
   React.useEffect(() => {
     if (profileAnchorEl) {
@@ -151,6 +152,24 @@ fetch(`${API_URL}/users/profile`, {
           >
             <Toolbar sx={{ minHeight: 80, display: 'flex', justifyContent: 'flex-end' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                {/* Theme Toggle */}
+                <Button
+                  onClick={toggleTheme}
+                  variant="outlined"
+                  size="small"
+                  sx={{ 
+                    mr: 1, 
+                    color: theme === 'dark' ? '#b0b8d1' : '#23263a',
+                    borderColor: theme === 'dark' ? '#b0b8d1' : '#23263a',
+                    '&:hover': {
+                      borderColor: theme === 'dark' ? '#fff' : '#7c3aed',
+                      color: theme === 'dark' ? '#fff' : '#7c3aed'
+                    }
+                  }}
+                >
+                  {theme === 'dark' ? '☀️' : '🌙'}
+                </Button>
+
                 {/* Currency Switcher */}
                 <ToggleButtonGroup
                   exclusive
