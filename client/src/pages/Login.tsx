@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import Spline from '@splinetool/react-spline';
 
 const Login: React.FC = () => {
@@ -119,9 +119,9 @@ const Login: React.FC = () => {
         <div style={{ marginTop: 24, textAlign: 'center' }}>
           <span style={{ color: '#b0b8d1', fontSize: 15 }}>Don't have an account?</span>
           <br />
-          <a href="/register" style={{ color: '#7c3aed', fontWeight: 700, textDecoration: 'underline', fontSize: 16, cursor: 'pointer' }}>
+          <Link to="/register" style={{ color: '#7c3aed', fontWeight: 700, textDecoration: 'underline', fontSize: 16, cursor: 'pointer' }}>
             Register
-          </a>
+          </Link>
         </div>
       </div>
     </div>
