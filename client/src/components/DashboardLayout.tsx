@@ -116,9 +116,11 @@ fetch(`${API_URL}/users/profile`, {
             [`& .MuiDrawer-paper`]: {
               width: drawerWidth,
               boxSizing: 'border-box',
-              background: 'linear-gradient(180deg, #181c2a 0%, #23263a 100%)',
-              color: '#fff',
-              borderRight: '1px solid #23263a',
+              background: theme === 'dark' 
+                ? 'linear-gradient(180deg, #181c2a 0%, #23263a 100%)' 
+                : 'linear-gradient(180deg, #ffffff 0%, #f8f9fc 100%)',
+              color: theme === 'dark' ? '#fff' : '#23263a',
+              borderRight: theme === 'dark' ? '1px solid #23263a' : '1px solid #e0e4eb',
             },
           }}
         >
@@ -130,7 +132,7 @@ fetch(`${API_URL}/users/profile`, {
           <List>
             {navItems.map((item) => (
               <ListItem button key={item.text} onClick={() => navigate(item.path)}>
-                <ListItemIcon sx={{ color: '#b0b8d1' }}>{item.icon}</ListItemIcon>
+                <ListItemIcon sx={{ color: theme === 'dark' ? '#b0b8d1' : '#5d5d7c' }}>{item.icon}</ListItemIcon>
                 <ListItemText primary={item.text} />
               </ListItem>
             ))}
@@ -138,7 +140,7 @@ fetch(`${API_URL}/users/profile`, {
               localStorage.removeItem('token');
               navigate('/login');
             }}>
-              <ListItemIcon sx={{ color: '#b0b8d1' }}><LogoutIcon /></ListItemIcon>
+              <ListItemIcon sx={{ color: theme === 'dark' ? '#b0b8d1' : '#5d5d7c' }}><LogoutIcon /></ListItemIcon>
               <ListItemText primary="Logout" />
             </ListItem>
           </List>
@@ -148,7 +150,14 @@ fetch(`${API_URL}/users/profile`, {
         <Box component="main" sx={{ flexGrow: 1, p: 0, ml: `${drawerWidth}px`, background: (theme) => theme.palette.background.default, minHeight: '100vh' }}>
           <AppBar
             position="fixed"
-            sx={{ width: `calc(100% - ${drawerWidth}px)`, ml: `${drawerWidth}px`, background: '#23263a', color: '#fff', boxShadow: 'none', borderBottom: '1px solid #23263a' }}
+            sx={{ 
+              width: `calc(100% - ${drawerWidth}px)`, 
+              ml: `${drawerWidth}px`, 
+              background: theme === 'dark' ? '#23263a' : '#ffffff', 
+              color: theme === 'dark' ? '#fff' : '#23263a', 
+              boxShadow: 'none', 
+              borderBottom: theme === 'dark' ? '1px solid #23263a' : '1px solid #e0e4eb' 
+            }}
           >
             <Toolbar sx={{ minHeight: 80, display: 'flex', justifyContent: 'flex-end' }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -177,56 +186,17 @@ fetch(`${API_URL}/users/profile`, {
                   size="small"
                   value={currency}
                   onChange={(_, val) => { if (val) setCurrency(val); }}
-                  sx={{ mr: 1, background: '#1c2030', borderRadius: 2 }}
+                  sx={{ 
+                    mr: 1, 
+                    background: theme === 'dark' ? '#1c2030' : '#f0f0f5', 
+                    borderRadius: 2 
+                  }}
                 >
-                  <ToggleButton value="INR" sx={{ color: '#b0b8d1' }}>INR</ToggleButton>
-                  <ToggleButton value="USD" sx={{ color: '#b0b8d1' }}>USD</ToggleButton>
-                  <ToggleButton value="EUR" sx={{ color: '#b0b8d1' }}>EUR</ToggleButton>
+                  <ToggleButton value="INR" sx={{ color: theme === 'dark' ? '#b0b8d1' : '#23263a' }}>INR</ToggleButton>
+                  <ToggleButton value="USD" sx={{ color: theme === 'dark' ? '#b0b8d1' : '#23263a' }}>USD</ToggleButton>
+                  <ToggleButton value="EUR" sx={{ color: theme === 'dark' ? '#b0b8d1' : '#23263a' }}>EUR</ToggleButton>
                 </ToggleButtonGroup>
 
-                <IconButton onClick={(e) => setProfileAnchorEl(e.currentTarget)}>
-                  <Avatar
-                    src={avatarSrc}
-                    sx={{ bgcolor: '#7c3aed', width: 40, height: 40, fontWeight: 700, fontSize: 20 }}
-                  >
-                    {profile?.name ? profile.name[0].toUpperCase() : (localStorage.getItem('name')?.[0]?.toUpperCase() || 'U')}
-                  </Avatar>
-                </IconButton>
-                <Menu
-                  anchorEl={profileAnchorEl}
-                  open={Boolean(profileAnchorEl)}
-                  onClose={() => setProfileAnchorEl(null)}
-                  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                  transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-                  PaperProps={{ sx: { background: '#23263a', color: '#fff', minWidth: 220, p: 2, borderRadius: 3 } }}
-                >
-                  <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1 }}>
-                    Profile
-                  </Typography>
-                  {profileLoading ? (
-  <Typography variant="body2" sx={{ color: '#b0b8d1' }}>Loading...</Typography>
-) : (
-  <>
-    {profile?.profilePic || localStorage.getItem('profilePic') ? (
-      <Avatar
-        src={profile?.profilePic ? (profile.profilePic.startsWith('http') ? profile.profilePic : `${API_URL}${profile.profilePic}`) : undefined}
-        sx={{ width: 64, height: 64, mx: 'auto', mb: 1 }}
-      >
-        {profile?.name ? profile.name[0].toUpperCase() : 'U'}
-      </Avatar>
-    ) : null}
-    <Typography variant="body2" sx={{ color: '#b0b8d1' }}>
-      Name: {profile?.name || 'Candidate'}
-    </Typography>
-    <Typography variant="body2" sx={{ color: '#b0b8d1' }}>
-      Email: {profile?.email || 'example@email.com'}
-    </Typography>
-    <Typography variant="body2" sx={{ color: '#b0b8d1' }}>
-      Role: {profile?.role || 'analyst'}
-    </Typography>
-  </>
-)}
-                </Menu>
               </Box>
             </Toolbar>
           </AppBar>
