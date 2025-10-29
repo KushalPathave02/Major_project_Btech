@@ -78,11 +78,11 @@ def send_gmail_smtp(recipient_email, name, verify_link):
                                 
                                 <!-- Welcome Message -->
                                 <p style="color: #666; font-size: 16px; line-height: 1.6; margin: 20px 0;">
-                                    Welcome to FinTrack, <strong>{name}</strong>!
+                                    Registration successful! Welcome to FinTrack, <strong>{name}</strong>!
                                 </p>
                                 
                                 <p style="color: #666; font-size: 16px; line-height: 1.6; margin: 20px 0;">
-                                    Please click the button below to verify your email address and activate your account.
+                                    Please verify your email address by clicking the button below to activate your account and start managing your finances.
                                 </p>
                                 
                                 <!-- Verify Button -->
@@ -111,8 +111,18 @@ def send_gmail_smtp(recipient_email, name, verify_link):
                                     ⏰ This verification link is valid for <strong>1 hour</strong>.
                                 </p>
                                 
+                                <!-- Already Verified Link -->
+                                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+                                    <p style="font-size: 14px; color: #666; margin-bottom: 10px;">
+                                        Already verified?
+                                    </p>
+                                    <a href="{verify_link.rsplit('/', 2)[0]}/login" style="color: #7c3aed; text-decoration: underline; font-weight: 600; font-size: 14px;">
+                                        Go to Login
+                                    </a>
+                                </div>
+                                
                                 <!-- Footer -->
-                                <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid #eee;">
+                                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
                                     <p style="color: #999; font-size: 13px; line-height: 1.5; margin: 0;">
                                         If you didn't create this account, please ignore this email.
                                     </p>
