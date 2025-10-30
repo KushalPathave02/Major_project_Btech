@@ -280,8 +280,11 @@ const Personal: React.FC = () => {
               try {
                 const res = await fetch(`${API_URL}/api/users/${userId}/password`, {
                   method: 'PUT',
-                  headers: { 'Content-Type': 'application/json', Authorization: token ? `Bearer ${token}` : '' },
-                  body: JSON.stringify(passwords)
+                  headers: { 
+                    'Content-Type': 'application/json', 
+                    'Authorization': token ? `Bearer ${token}` : '' 
+                  },
+                  body: JSON.stringify({ newPassword: passwords.new })
                 });
                 const data = await res.json();
                 if (res.ok) setPasswordMsg('Password changed successfully!');
