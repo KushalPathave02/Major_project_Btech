@@ -243,7 +243,19 @@ const Personal: React.FC = () => {
             }}
           />
           {passwordMsg && <Typography sx={{ color: passwordMsg.includes('success') ? '#16ff7c' : '#ff1744' }}>{passwordMsg}</Typography>}
-          <Button variant="contained" color="secondary" sx={{ mt: 1 }} disabled={saving || !passwords.current || !passwords.new || passwords.new !== passwords.confirm}
+          <Button 
+            variant="contained" 
+            color="secondary" 
+            sx={{ 
+              mt: 1,
+              background: 'linear-gradient(120deg, #7c3aed 0%, #7c3aed 100%)',
+              '&:hover': {
+                background: 'linear-gradient(120deg, #6d28d9 0%, #6d28d9 100%)',
+              },
+              textTransform: 'none',
+              fontWeight: 600
+            }} 
+            disabled={saving || !passwords.new || !passwords.confirm || passwords.new !== passwords.confirm}
             onClick={async () => {
               setPasswordMsg('');
               setSaving(true);
