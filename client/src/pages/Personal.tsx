@@ -14,12 +14,12 @@ const Personal: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', role: '', joinDate: '', profilePic: '' });
-  const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
+  const [passwords, setPasswords] = useState({ new: '', confirm: '' });
   const [passwordMsg, setPasswordMsg] = useState('');
   const [twoFA, setTwoFA] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showPwd, setShowPwd] = useState({ current: false, new: false, confirm: false });
+  const [showPwd, setShowPwd] = useState({ new: false, confirm: false });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -74,11 +74,41 @@ const Personal: React.FC = () => {
 };
   const handlePasswordChange = async () => {
     setPasswordMsg('');
+    
+    if (!passwords.new || !passwords.confirm) {
+      setPasswordMsg('Please fill in all fields');
+      return;
+    }
+    
     if (passwords.new !== passwords.confirm) {
       setPasswordMsg('Passwords do not match');
       return;
     }
-    // ...rest of your password change logic
+
+    try {
+      const token = localStorage.getItem('token');
+      const userId = localStorage.getItem('userId');
+      const response = await fetch(`${API_URL}/api/users/${userId}/password`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
+        body: JSON.stringify({ newPassword: passwords.new })
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        setPasswordMsg('Password updated successfully!');
+        setPasswords({ new: '', confirm: '' });
+      } else {
+        setPasswordMsg(data.message || 'Failed to update password');
+      }
+    } catch (error) {
+      setPasswordMsg('An error occurred. Please try again.');
+      console.error('Error updating password:', error);
+    }
   };
 
   // --- MAIN RENDER LOGIC ---
@@ -170,27 +200,6 @@ const Personal: React.FC = () => {
           </Box>
         <Box sx={{ my: 3 }}>
           <Typography variant="subtitle1" sx={{ color: '#fff', mb: 1 }}>Change Password</Typography>
-          <TextField
-            label="Current Password"
-            type={showPwd.current ? 'text' : 'password'}
-            name="current"
-            value={passwords.current}
-            onChange={e => setPasswords({ ...passwords, current: e.target.value })}
-            fullWidth sx={{ mb: 2 }}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    aria-label={showPwd.current ? 'Hide password' : 'Show password'}
-                    onClick={() => setShowPwd(p => ({ ...p, current: !p.current }))}
-                    edge="end"
-                  >
-                    {showPwd.current ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              )
-            }}
-          />
           <TextField
             label="New Password"
             type={showPwd.new ? 'text' : 'password'}
