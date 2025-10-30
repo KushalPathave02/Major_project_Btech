@@ -171,25 +171,25 @@ const Personal: React.FC = () => {
         <Box sx={{ my: 3 }}>
           <Typography variant="subtitle1" sx={{ color: '#fff', mb: 1 }}>Change Password</Typography>
           <TextField
-            label="Current Password"
-            type={showPwd.current ? 'text' : 'password'}
-            name="current"
-            value={passwords.current}
-            onChange={e => setPasswords({ ...passwords, current: e.target.value })}
-            fullWidth sx={{ mb: 2 }}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    aria-label={showPwd.current ? 'Hide password' : 'Show password'}
-                    onClick={() => setShowPwd(p => ({ ...p, current: !p.current }))}
-                    edge="end"
-                  >
-                    {showPwd.current ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              )
-            }}
+            // label="Current Password"
+            // type={showPwd.current ? 'text' : 'password'}
+            // name="current"
+            // value={passwords.current}
+            // onChange={e => setPasswords({ ...passwords, current: e.target.value })}
+            // fullWidth sx={{ mb: 2 }}
+            // InputProps={{
+            //   endAdornment: (
+            //     <InputAdornment position="end">
+            //       <IconButton
+            //         aria-label={showPwd.current ? 'Hide password' : 'Show password'}
+            //         onClick={() => setShowPwd(p => ({ ...p, current: !p.current }))}
+            //         edge="end"
+            //       >
+            //         {showPwd.current ? <VisibilityOff /> : <Visibility />}
+            //       </IconButton>
+            //     </InputAdornment>
+            //   )
+            // }}
           />
           <TextField
             label="New Password"
