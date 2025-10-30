@@ -142,7 +142,7 @@ const handleSubmit = async (e: React.FormEvent) => {
         <div style={{ marginTop: 24, textAlign: 'center' }}>
           <span style={{ color: '#b0b8d1', fontSize: 15 }}>Already have an account?</span>
           <br />
-          <Link to="/login" style={{ color: '#7c3aed', fontWeight: 700, textDecoration: 'underline', fontSize: 16, cursor: 'pointer' }}>
+          <Link to="/login" style={{ color: '#fdfcfdff', fontWeight: 700, textDecoration: 'underline', fontSize: 16, cursor: 'pointer' }}>
             Login
           </Link>
         </div>
