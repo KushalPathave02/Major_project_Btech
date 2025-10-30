@@ -95,28 +95,20 @@ def upload_profile_pic(user_id):
 @users_bp.route('/api/users/<user_id>/password', methods=['PUT'])
 @token_required
 def change_password(user_id):
-    """Change password for the authenticated user. Requires current, new, confirm."""
+    """Change password for the authenticated user. Only requires new password."""
     db = get_db()
     data = request.get_json() or {}
-    current = data.get('current')
-    new = data.get('new')
-    confirm = data.get('confirm')
+    new_password = data.get('newPassword')
 
-    if not all([current, new, confirm]):
-        return jsonify({'message': 'Missing required fields'}), 400
-    if new != confirm:
-        return jsonify({'message': 'Passwords do not match'}), 400
+    if not new_password:
+        return jsonify({'message': 'New password is required'}), 400
 
     # Ensure the user exists
     user = db.users.find_one({'_id': ObjectId(user_id)})
     if not user:
         return jsonify({'message': 'User not found'}), 404
 
-    # Verify current password
-    if not check_password_hash(user.get('password', ''), current):
-        return jsonify({'message': 'Current password is incorrect'}), 401
-
     # Update to new hashed password
-    hashed = generate_password_hash(new)
+    hashed = generate_password_hash(new_password)
     db.users.update_one({'_id': ObjectId(user_id)}, {'$set': {'password': hashed}})
     return jsonify({'message': 'Password changed successfully'})
