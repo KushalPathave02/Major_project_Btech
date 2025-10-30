@@ -227,7 +227,7 @@ const VerifyEmail: React.FC = () => {
         {status === 'pending' && (
           <div style={{ marginTop: '30px', paddingTop: '20px', borderTop: '1px solid #eee' }}>
             <p style={{ fontSize: '14px', color: '#666', marginBottom: '10px' }}>
-              Already verified?
+             
             </p>
             <Link 
               to="/login" 
