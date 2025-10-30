@@ -126,7 +126,7 @@ fetch(`${API_URL}/users/profile`, {
         >
           <Toolbar sx={{ minHeight: 80 }}>
             <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 700, letterSpacing: 1 }}>
-              FinTrack
+              FinTrack+
             </Typography>
           </Toolbar>
           <List>
