@@ -48,7 +48,7 @@ const Login: React.FC = () => {
 
       {/* Login Form Overlay */}
       <div style={{ position: 'relative', zIndex: 2, maxWidth: 320, width: '100%', background: 'linear-gradient(120deg, #23263a 0%, #7c3aed 100%)', borderRadius: 20, padding: 40, boxShadow: '0 6px 32px rgba(44,62,80,0.18)', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '0 auto', top: '50%', transform: 'translateY(25vh)' }}>
-        <div style={{ fontWeight: 800, fontSize: 26, letterSpacing: 1, marginBottom: 24, color: '#7c3aed' }}>FinTrack</div>
+        <div style={{ fontWeight: 800, fontSize: 26, letterSpacing: 1, marginBottom: 24, color: '#7c3aed' }}>FinTrack+</div>
         <h2 style={{ textAlign: 'center', marginBottom: 24, fontWeight: 700 }}>Login</h2>
         <form onSubmit={handleSubmit} style={{ width: '100%' }}>
           <label style={{ marginBottom: 8, fontSize: 16, fontWeight: 500, color: '#fff' }}>Email:</label>
