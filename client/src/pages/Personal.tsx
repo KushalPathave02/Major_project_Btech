@@ -14,117 +14,71 @@ const Personal: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', role: '', joinDate: '', profilePic: '' });
-  const [passwords, setPasswords] = useState({
-    new: '',
-    confirm: ''
-  });
+  const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
   const [passwordMsg, setPasswordMsg] = useState('');
   const [twoFA, setTwoFA] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showPwd, setShowPwd] = useState({ new: false, confirm: false });
+  const [showPwd, setShowPwd] = useState({ current: false, new: false, confirm: false });
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      setLoading(true);
-      const token = localStorage.getItem('token');
-      const userId = localStorage.getItem('userId');
-      try {
-        const res = await fetch(`${API_URL}/api/users/${userId}`, {
-          headers: { Authorization: token ? `Bearer ${token}` : '' },
-        });
-        const data = await res.json();
-        setProfile(data);
-        setForm({
-          name: data.name || '',
-          email: data.email || '',
-          role: data.role || '',
-          joinDate: data.joinDate ? data.joinDate.slice(0,10) : '',
-          profilePic: data.profilePic || ''
-        });
-        setTwoFA(!!data.twoFAEnabled);
-      } catch {
-        setProfile(null);
-      }
-      setLoading(false);
-    };
-    fetchProfile();
-  }, []);
-
-  const handleEdit = (): void => setEditMode(true);
-  const handleCancel = (): void => { setEditMode(false); setForm(profile); };
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setPasswords(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-  const handleSave = async () => {
-    setSaving(true);
+  const fetchProfile = async () => {
+    setLoading(true);
     const token = localStorage.getItem('token');
     const userId = localStorage.getItem('userId');
     try {
       const res = await fetch(`${API_URL}/api/users/${userId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: token ? `Bearer ${token}` : '' },
-        body: JSON.stringify(form)
+        headers: { Authorization: token ? `Bearer ${token}` : '' },
       });
-      if (res.ok) {
-        setEditMode(false);
-        setProfile({ ...profile, ...form });
-      }
-    } finally {
-      setSaving(false);
+      const data = await res.json();
+      setProfile(data);
+      setForm({
+        name: data.name || '',
+        email: data.email || '',
+        role: data.role || '',
+        joinDate: data.joinDate ? data.joinDate.slice(0,10) : '',
+        profilePic: data.profilePic || ''
+      });
+      setTwoFA(!!data.twoFAEnabled);
+    } catch {
+      setProfile(null);
     }
+    setLoading(false);
   };
-  const handleSubmitPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
+  fetchProfile();
+}, []);
+
+  const handleEdit = (): void => setEditMode(true);
+  const handleCancel = (): void => { setEditMode(false); setForm(profile); };
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  setForm({ ...form, [e.target.name]: e.target.value });
+};
+  const handleSave = async () => {
+  setSaving(true);
+  const token = localStorage.getItem('token');
+  const userId = localStorage.getItem('userId');
+  try {
+    const res = await fetch(`${API_URL}/api/users/${userId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: token ? `Bearer ${token}` : '' },
+      body: JSON.stringify(form)
+    });
+    if (res.ok) {
+      setEditMode(false);
+      setProfile({ ...profile, ...form });
+    }
+  } finally {
+    setSaving(false);
+  }
+};
+  const handlePasswordChange = async () => {
     setPasswordMsg('');
-    setSaving(true);
-    
-    try {
-      const token = localStorage.getItem('token');
-      const userId = localStorage.getItem('userId');
-      
-      if (!token || !userId) {
-        setPasswordMsg('Authentication error. Please log in again.');
-        setSaving(false);
-        return;
-      }
-      
-      if (passwords.new !== passwords.confirm) {
-        setPasswordMsg('New passwords do not match');
-        setSaving(false);
-        return;
-      }
-      
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/users/${userId}/password`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ newPassword: passwords.new })
-      });
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to update password');
-      }
-      
-      setPasswordMsg('Password updated successfully!');
-      setPasswords({ new: '', confirm: '' });
-    } catch (error) {
-      setPasswordMsg(error instanceof Error ? error.message : 'Failed to update password');
-    } finally {
-      setSaving(false);
-    }  
+    if (passwords.new !== passwords.confirm) {
+      setPasswordMsg('Passwords do not match');
+      return;
+    }
+    // ...rest of your password change logic
   };
 
   // --- MAIN RENDER LOGIC ---
@@ -217,6 +171,27 @@ const Personal: React.FC = () => {
         <Box sx={{ my: 3 }}>
           <Typography variant="subtitle1" sx={{ color: '#fff', mb: 1 }}>Change Password</Typography>
           <TextField
+            label="Current Password"
+            type={showPwd.current ? 'text' : 'password'}
+            name="current"
+            value={passwords.current}
+            onChange={e => setPasswords({ ...passwords, current: e.target.value })}
+            fullWidth sx={{ mb: 2 }}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label={showPwd.current ? 'Hide password' : 'Show password'}
+                    onClick={() => setShowPwd(p => ({ ...p, current: !p.current }))}
+                    edge="end"
+                  >
+                    {showPwd.current ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              )
+            }}
+          />
+          <TextField
             label="New Password"
             type={showPwd.new ? 'text' : 'password'}
             name="new"
@@ -259,19 +234,7 @@ const Personal: React.FC = () => {
             }}
           />
           {passwordMsg && <Typography sx={{ color: passwordMsg.includes('success') ? '#16ff7c' : '#ff1744' }}>{passwordMsg}</Typography>}
-          <Button 
-            variant="contained" 
-            color="secondary" 
-            sx={{ 
-              mt: 1,
-              background: 'linear-gradient(120deg, #7c3aed 0%, #7c3aed 100%)',
-              '&:hover': {
-                background: 'linear-gradient(120deg, #6d28d9 0%, #6d28d9 100%)',
-              },
-              textTransform: 'none',
-              fontWeight: 600
-            }} 
-            disabled={saving || !passwords.new || !passwords.confirm || passwords.new !== passwords.confirm}
+          <Button variant="contained" color="secondary" sx={{ mt: 1 }} disabled={saving || !passwords.current || !passwords.new || passwords.new !== passwords.confirm}
             onClick={async () => {
               setPasswordMsg('');
               setSaving(true);
@@ -280,11 +243,8 @@ const Personal: React.FC = () => {
               try {
                 const res = await fetch(`${API_URL}/api/users/${userId}/password`, {
                   method: 'PUT',
-                  headers: { 
-                    'Content-Type': 'application/json', 
-                    'Authorization': token ? `Bearer ${token}` : '' 
-                  },
-                  body: JSON.stringify({ newPassword: passwords.new })
+                  headers: { 'Content-Type': 'application/json', Authorization: token ? `Bearer ${token}` : '' },
+                  body: JSON.stringify(passwords)
                 });
                 const data = await res.json();
                 if (res.ok) setPasswordMsg('Password changed successfully!');
