@@ -96,19 +96,37 @@ def upload_profile_pic(user_id):
 @token_required
 def change_password(user_id):
     """Change password for the authenticated user. Only requires new password."""
-    db = get_db()
-    data = request.get_json() or {}
-    new_password = data.get('newPassword')
+    try:
+        db = get_db()
+        data = request.get_json() or {}
+        new_password = data.get('newPassword')
 
-    if not new_password:
-        return jsonify({'message': 'New password is required'}), 400
+        if not new_password:
+            return jsonify({'message': 'New password is required'}), 400
+        
+        if not isinstance(new_password, str) or len(new_password) < 6:
+            return jsonify({'message': 'Password must be at least 6 characters'}), 400
 
-    # Ensure the user exists
-    user = db.users.find_one({'_id': ObjectId(user_id)})
-    if not user:
-        return jsonify({'message': 'User not found'}), 404
+        # Ensure the user exists
+        try:
+            user = db.users.find_one({'_id': ObjectId(user_id)})
+            if not user:
+                return jsonify({'message': 'User not found'}), 404
+        except Exception as e:
+            return jsonify({'message': 'Invalid user ID format'}), 400
 
-    # Update to new hashed password
-    hashed = generate_password_hash(new_password)
-    db.users.update_one({'_id': ObjectId(user_id)}, {'$set': {'password': hashed}})
-    return jsonify({'message': 'Password changed successfully'})
+        # Update to new hashed password
+        hashed = generate_password_hash(new_password)
+        result = db.users.update_one(
+            {'_id': ObjectId(user_id)}, 
+            {'$set': {'password': hashed}}
+        )
+        
+        if result.matched_count == 0:
+            return jsonify({'message': 'User not found or no changes made'}), 404
+            
+        return jsonify({'message': 'Password changed successfully'}), 200
+        
+    except Exception as e:
+        current_app.logger.error(f'Error changing password: {str(e)}')
+        return jsonify({'message': 'An error occurred while updating the password'}), 500
