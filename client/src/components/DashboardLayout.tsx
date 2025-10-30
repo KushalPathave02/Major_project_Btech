@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Box, Drawer, AppBar, Toolbar, Typography, List, ListItem, ListItemIcon, ListItemText, CssBaseline, Avatar, InputBase, IconButton, ThemeProvider, createTheme, Badge, Menu, ToggleButtonGroup, ToggleButton, Button } from '@mui/material';
+import { Box, Drawer, AppBar, Toolbar, Typography, List, ListItem, ListItemIcon, ListItemText, CssBaseline, Avatar, InputBase, IconButton, ThemeProvider, createTheme, Badge, Menu, ToggleButtonGroup, ToggleButton, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
@@ -31,6 +31,20 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
   const [profile, setProfile] = useState<{ name?: string; email?: string; profilePic?: string; role?: string } | null>(null);
   const [profileLoading, setProfileLoading] = useState(false);
   const [avatarSrc, setAvatarSrc] = useState<string | undefined>(undefined);
+  const [openLogoutDialog, setOpenLogoutDialog] = useState(false);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate('/login');
+  };
+
+  const handleOpenLogoutDialog = () => {
+    setOpenLogoutDialog(true);
+  };
+
+  const handleCloseLogoutDialog = () => {
+    setOpenLogoutDialog(false);
+  };
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
   const { currency, setCurrency } = useCurrency();
   const { theme, toggleTheme } = useTheme();
@@ -136,15 +150,65 @@ fetch(`${API_URL}/users/profile`, {
                 <ListItemText primary={item.text} />
               </ListItem>
             ))}
-            <ListItem button onClick={() => {
-              localStorage.removeItem('token');
-              navigate('/login');
-            }}>
+            <ListItem button onClick={handleOpenLogoutDialog}>
               <ListItemIcon sx={{ color: theme === 'dark' ? '#b0b8d1' : '#5d5d7c' }}><LogoutIcon /></ListItemIcon>
               <ListItemText primary="Logout" />
             </ListItem>
           </List>
         </Drawer>
+
+        {/* Logout Confirmation Dialog */}
+        <Dialog
+          open={openLogoutDialog}
+          onClose={handleCloseLogoutDialog}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+          PaperProps={{
+            style: {
+              background: theme === 'dark' ? '#23263a' : '#ffffff',
+              color: theme === 'dark' ? '#ffffff' : '#23263a',
+              borderRadius: '12px',
+              padding: '20px',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            }
+          }}
+        >
+          <DialogTitle id="alert-dialog-title" style={{ fontWeight: 600, fontSize: '1.2rem' }}>
+            Confirm Logout
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description" style={{ color: theme === 'dark' ? '#b0b8d1' : '#5d5d7c' }}>
+              Are you sure you want to logout?
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions style={{ padding: '16px 24px' }}>
+            <Button 
+              onClick={handleCloseLogoutDialog} 
+              style={{
+                color: theme === 'dark' ? '#b0b8d1' : '#5d5d7c',
+                textTransform: 'none',
+                fontWeight: 500
+              }}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleLogout} 
+              autoFocus
+              style={{
+                background: 'linear-gradient(120deg, #7c3aed 0%, #7c3aed 100%)',
+                color: 'white',
+                textTransform: 'none',
+                fontWeight: 600,
+                padding: '6px 16px',
+                borderRadius: '8px',
+                boxShadow: 'none'
+              }}
+            >
+              Logout
+            </Button>
+          </DialogActions>
+        </Dialog>
 
         {/* Main content */}
         <Box component="main" sx={{ flexGrow: 1, p: 0, ml: `${drawerWidth}px`, background: (theme) => theme.palette.background.default, minHeight: '100vh' }}>
