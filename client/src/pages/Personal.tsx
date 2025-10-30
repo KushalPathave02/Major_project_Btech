@@ -14,7 +14,10 @@ const Personal: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', role: '', joinDate: '', profilePic: '' });
-  const [passwords, setPasswords] = useState({ new: '', confirm: '' });
+  const [passwords, setPasswords] = useState({
+    new: '',
+    confirm: ''
+  });
   const [passwordMsg, setPasswordMsg] = useState('');
   const [twoFA, setTwoFA] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -23,92 +26,105 @@ const Personal: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-  const fetchProfile = async () => {
-    setLoading(true);
-    const token = localStorage.getItem('token');
-    const userId = localStorage.getItem('userId');
-    try {
-      const res = await fetch(`${API_URL}/api/users/${userId}`, {
-        headers: { Authorization: token ? `Bearer ${token}` : '' },
-      });
-      const data = await res.json();
-      setProfile(data);
-      setForm({
-        name: data.name || '',
-        email: data.email || '',
-        role: data.role || '',
-        joinDate: data.joinDate ? data.joinDate.slice(0,10) : '',
-        profilePic: data.profilePic || ''
-      });
-      setTwoFA(!!data.twoFAEnabled);
-    } catch {
-      setProfile(null);
-    }
-    setLoading(false);
-  };
-  fetchProfile();
-}, []);
+    const fetchProfile = async () => {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      const userId = localStorage.getItem('userId');
+      try {
+        const res = await fetch(`${API_URL}/api/users/${userId}`, {
+          headers: { Authorization: token ? `Bearer ${token}` : '' },
+        });
+        const data = await res.json();
+        setProfile(data);
+        setForm({
+          name: data.name || '',
+          email: data.email || '',
+          role: data.role || '',
+          joinDate: data.joinDate ? data.joinDate.slice(0,10) : '',
+          profilePic: data.profilePic || ''
+        });
+        setTwoFA(!!data.twoFAEnabled);
+      } catch {
+        setProfile(null);
+      }
+      setLoading(false);
+    };
+    fetchProfile();
+  }, []);
 
   const handleEdit = (): void => setEditMode(true);
   const handleCancel = (): void => { setEditMode(false); setForm(profile); };
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  setForm({ ...form, [e.target.name]: e.target.value });
-};
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setPasswords(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
   const handleSave = async () => {
-  setSaving(true);
-  const token = localStorage.getItem('token');
-  const userId = localStorage.getItem('userId');
-  try {
-    const res = await fetch(`${API_URL}/api/users/${userId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', Authorization: token ? `Bearer ${token}` : '' },
-      body: JSON.stringify(form)
-    });
-    if (res.ok) {
-      setEditMode(false);
-      setProfile({ ...profile, ...form });
+    setSaving(true);
+    const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('userId');
+    try {
+      const res = await fetch(`${API_URL}/api/users/${userId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: token ? `Bearer ${token}` : '' },
+        body: JSON.stringify(form)
+      });
+      if (res.ok) {
+        setEditMode(false);
+        setProfile({ ...profile, ...form });
+      }
+    } finally {
+      setSaving(false);
     }
-  } finally {
-    setSaving(false);
-  }
-};
-  const handlePasswordChange = async () => {
+  };
+  const handleSubmitPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
     setPasswordMsg('');
+    setSaving(true);
     
-    if (!passwords.new || !passwords.confirm) {
-      setPasswordMsg('Please fill in all fields');
-      return;
-    }
-    
-    if (passwords.new !== passwords.confirm) {
-      setPasswordMsg('Passwords do not match');
-      return;
-    }
-
     try {
       const token = localStorage.getItem('token');
       const userId = localStorage.getItem('userId');
-      const response = await fetch(`${API_URL}/api/users/${userId}/password`, {
+      
+      if (!token || !userId) {
+        setPasswordMsg('Authentication error. Please log in again.');
+        setSaving(false);
+        return;
+      }
+      
+      if (passwords.new !== passwords.confirm) {
+        setPasswordMsg('New passwords do not match');
+        setSaving(false);
+        return;
+      }
+      
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/users/${userId}/password`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : ''
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ newPassword: passwords.new })
       });
-
+      
       const data = await response.json();
       
-      if (response.ok) {
-        setPasswordMsg('Password updated successfully!');
-        setPasswords({ new: '', confirm: '' });
-      } else {
-        setPasswordMsg(data.message || 'Failed to update password');
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to update password');
       }
+      
+      setPasswordMsg('Password updated successfully!');
+      setPasswords({ new: '', confirm: '' });
     } catch (error) {
-      setPasswordMsg('An error occurred. Please try again.');
-      console.error('Error updating password:', error);
-    }
+      setPasswordMsg(error instanceof Error ? error.message : 'Failed to update password');
+    } finally {
+      setSaving(false);
+    }  
   };
 
   // --- MAIN RENDER LOGIC ---
