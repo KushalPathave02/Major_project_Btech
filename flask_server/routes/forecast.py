@@ -26,10 +26,23 @@ def init_app(db_func):
     global get_db
     get_db = db_func
 
+@forecast_bp.route('/forecast/test', methods=['GET'])
+def test_forecast():
+    """Test endpoint to check LSTM availability"""
+    return jsonify({
+        'status': 'ok',
+        'tensorflow_available': TENSORFLOW_AVAILABLE,
+        'message': 'Forecast service is running',
+        'lstm_ready': TENSORFLOW_AVAILABLE,
+        'endpoint': '/forecast'
+    })
+
 @forecast_bp.route('/forecast', methods=['GET'])
 @token_required
 def get_forecast():
     try:
+        print("🔍 Forecast endpoint called...")
+        print(f"📊 TensorFlow Available: {TENSORFLOW_AVAILABLE}")
         # Per-user transactions only; no global file fallback to avoid leaking data
         db = get_db()
         user_id = g.user_id
@@ -43,11 +56,18 @@ def get_forecast():
             'type': 1
         }))
 
+        print(f"📊 Found {len(transactions)} transactions for user {user_id}")
+        
         if not transactions:
             return jsonify({
                 'history': [],
                 'forecast': None,
-                'message': 'No transactions yet for forecasting'
+                'message': 'No transactions yet for forecasting. Please upload your transaction data first.',
+                'debug': {
+                    'user_id': str(user_id),
+                    'transaction_count': 0,
+                    'tensorflow_available': TENSORFLOW_AVAILABLE
+                }
             })
 
         # Normalize and filter transactions into a DataFrame

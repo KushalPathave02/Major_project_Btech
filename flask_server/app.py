@@ -31,7 +31,11 @@ allowed_origins = [
   'http://localhost:3001',
   'https://loopr-1.onrender.com',
   'https://major-project-btech-1.onrender.com',
-  'https://major-project-btech.onrender.com'
+  'https://major-project-btech.onrender.com',
+  'https://major-project-btech-1.onrender.com/dashboard',
+  'https://fintrack-dashboard.netlify.app',
+  'https://fintrack-app.vercel.app',
+  '*'  # Allow all origins for development (remove in production)
 ]
 
 # If a public base URL is set (e.g., http://192.168.1.60:5000),
