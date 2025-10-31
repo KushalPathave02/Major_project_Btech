@@ -8,6 +8,8 @@ google-generativeai
 pandas>=2.0.0
 statsmodels>=0.14.0
 scikit-learn>=1.0.0
+tensorflow>=2.20.0
+numpy>=1.26.0
 Flask-Mail
 itsdangerous
 gunicorn
