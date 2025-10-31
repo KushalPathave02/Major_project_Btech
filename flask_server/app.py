@@ -57,7 +57,23 @@ frontend_url = os.getenv('FRONTEND_URL')
 if frontend_url:
     allowed_origins.append(frontend_url)
 
-CORS(app, origins=allowed_origins, supports_credentials=True)
+# Enable CORS for all routes and origins (for debugging)
+CORS(app, 
+     origins=['*'],  # Allow all origins temporarily
+     methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+     allow_headers=['Content-Type', 'Authorization', 'Access-Control-Allow-Credentials'],
+     supports_credentials=True,
+     expose_headers=['Content-Range', 'X-Content-Range']
+)
+
+# Add CORS headers to all responses
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    response.headers.add('Access-Control-Allow-Credentials', 'true')
+    return response
 
 # Health check route
 @app.route('/')
