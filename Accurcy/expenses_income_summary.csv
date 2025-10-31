@@ -1,4 +1,4 @@
-Date,title,category,account,amount,currency,type,transfer-amount,transfer-currency,to-account,receive-amount,receive-currency,description,due-date,id
+vnfjDate,title,category,account,amount,currency,type,transfer-amount,transfer-currency,to-account,receive-amount,receive-currency,description,due-date,id
 2024-08-11 13:56:59.652,Karthik,Bills & Fees,Savings Bank,45.00,INR,EXPENSE,,,,,,,,74e78631-db14-4495-bfb9-85546b0bd2fe
 2024-08-10 16:09:55.986,Juice,Food & Drinks,Cash,40.00,INR,EXPENSE,,,,,,,,65e12e62-9f63-4c6c-b452-6c7b42fbfb7f
 2024-08-09 10:25:21.618,Tire,Transport,Cash,10.00,INR,EXPENSE,,,,,,,,9ecd93bd-a835-4263-86e2-99fea475fa37

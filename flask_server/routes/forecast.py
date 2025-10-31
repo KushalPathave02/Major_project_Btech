@@ -3,10 +3,21 @@ from flask import g
 from bson import ObjectId
 from datetime import datetime, timedelta
 import pandas as pd
+import numpy as np
 import os
 import json
-from statsmodels.tsa.arima.model import ARIMA
+from sklearn.preprocessing import MinMaxScaler
 from middleware import token_required
+
+# TensorFlow for LSTM
+try:
+    import tensorflow as tf
+    from tensorflow import keras
+    from tensorflow.keras import layers
+    TENSORFLOW_AVAILABLE = True
+except ImportError:
+    tf = None
+    TENSORFLOW_AVAILABLE = False
 
 get_db = None  # Will be set by the app
 forecast_bp = Blueprint('forecast', __name__)
@@ -78,23 +89,69 @@ def get_forecast():
         # Group by month and sum expenses
         monthly_expenses = df.groupby('month')['amount'].sum()
         
-        if len(monthly_expenses) < 3:  # Need at least 3 data points for ARIMA
+        if len(monthly_expenses) < 6:  # Need at least 6 data points for LSTM
             return jsonify({
                 'history': [{'month': str(m), 'expense': float(v)} for m, v in monthly_expenses.items()],
                 'forecast': None,
-                'message': 'Need at least 3 months of data for accurate forecasting'
+                'message': 'Need at least 6 months of data for LSTM forecasting'
             })
         
-        # Convert to numeric values for ARIMA
+        # Check if TensorFlow is available
+        if not TENSORFLOW_AVAILABLE:
+            return jsonify({
+                'error': 'TensorFlow not available for LSTM forecasting',
+                'history': [{'month': str(m), 'expense': float(v)} for m, v in monthly_expenses.items()],
+                'forecast': None
+            }), 500
+        
+        # Convert to numeric values for LSTM
         y = monthly_expenses.astype(float).values
         
         try:
-            # Fit ARIMA model (simple configuration - can be tuned)
-            model = ARIMA(y, order=(1, 1, 1))
-            fit_model = model.fit()
+            # Prepare data for LSTM
+            scaler = MinMaxScaler()
+            y_scaled = scaler.fit_transform(y.reshape(-1, 1))
+            
+            # Create sequences for LSTM (use 3 months to predict next month)
+            WINDOW_SIZE = min(3, len(y_scaled) - 1)
+            X, y_target = [], []
+            
+            for i in range(WINDOW_SIZE, len(y_scaled)):
+                X.append(y_scaled[i-WINDOW_SIZE:i, 0])
+                y_target.append(y_scaled[i, 0])
+            
+            X = np.array(X)
+            y_target = np.array(y_target)
+            
+            if len(X) < 3:
+                return jsonify({
+                    'error': 'Insufficient data for LSTM training',
+                    'history': [{'month': str(m), 'expense': float(v)} for m, v in monthly_expenses.items()],
+                    'forecast': None
+                }), 500
+            
+            # Reshape for LSTM [samples, time steps, features]
+            X = X.reshape((X.shape[0], X.shape[1], 1))
+            
+            # Build LSTM model
+            model = keras.Sequential([
+                layers.Input(shape=(WINDOW_SIZE, 1)),
+                layers.LSTM(50, return_sequences=True),
+                layers.LSTM(50),
+                layers.Dense(25),
+                layers.Dense(1)
+            ])
+            
+            model.compile(optimizer='adam', loss='mse')
+            
+            # Train model (with minimal epochs for speed)
+            model.fit(X, y_target, epochs=50, batch_size=1, verbose=0)
             
             # Forecast next month
-            forecast = fit_model.forecast(steps=1)
+            last_sequence = y_scaled[-WINDOW_SIZE:].reshape(1, WINDOW_SIZE, 1)
+            forecast_scaled = model.predict(last_sequence, verbose=0)
+            forecast_value = scaler.inverse_transform(forecast_scaled)[0][0]
+            
             next_month = monthly_expenses.index[-1] + 1
             
             # Prepare response
@@ -103,15 +160,13 @@ def get_forecast():
                 'expense': float(amount)
             } for month, amount in monthly_expenses.items()]
             
-            forecast_value = float(forecast[0])
-            
             return jsonify({
                 'history': history,
                 'forecast': {
                     'month': str(next_month),
-                    'expense': forecast_value
+                    'expense': float(forecast_value)
                 },
-                'message': 'Forecast generated successfully'
+                'message': 'LSTM forecast generated successfully'
             })
             
         except Exception as e:
