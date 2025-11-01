@@ -25,8 +25,7 @@ const ForecastCombinedCard: React.FC = () => {
       try {
         setLoading(true);
         const token = localStorage.getItem('token');
-        const res = await fetch(`${API_URL}/forecast`, { headers: { Authorization: token ? `Bearer ${token}` : '' } });
-        const json: ForecastResponse = await res.json();
+        const res = await fetch(`${API_URL}/forecast`, { headers: { Authorization: token ? `Bearer ${token}` : '' } });        const json: ForecastResponse = await res.json();
         if (!res.ok) throw new Error(json.error || json.message || 'Failed to fetch forecast');
         const s: Array<ForecastPoint & { type: 'Actual' | 'Forecast' }> = [];
         (json.history || []).forEach(h => s.push({ ...h, type: 'Actual' }));
