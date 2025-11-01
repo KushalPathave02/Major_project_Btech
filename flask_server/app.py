@@ -25,23 +25,18 @@ app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER', os.getenv('
 mail = Mail(app)
 
 # CORS Configuration
-# Only allow your production frontend domain
-CORS(app, resources={
-    r"/*": {
-        "origins": ["https://major-project-btech-1.onrender.com"],
-        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        "allow_headers": ["Content-Type", "Authorization"],
-        "supports_credentials": True
-    }
-})
+# Allow both production and development frontend domains
+allowed_origins = [
+    'https://major-project-btech-1.onrender.com',
+    'http://localhost:3000',  # For local development
+    'http://127.0.0.1:3000'   # For local development
+]
 
-# If a public base URL is set (e.g., http://192.168.1.60:5000),
-# also allow that origin and its :3000 counterpart for the client.
+# Add public base URL if set (for local network access)
 public_base = os.getenv('APP_PUBLIC_BASE_URL')
 if public_base:
     allowed_origins.append(public_base)
     try:
-        # Derive LAN host to allow :3000 frontend
         import urllib.parse as _urlparse
         parsed = _urlparse.urlparse(public_base)
         if parsed.scheme and parsed.hostname:
@@ -49,28 +44,24 @@ if public_base:
     except Exception:
         pass
 
-# Add Render frontend URL from environment variable
+# Add frontend URL from environment variable if set
 frontend_url = os.getenv('FRONTEND_URL')
-if frontend_url:
+if frontend_url and frontend_url not in allowed_origins:
     allowed_origins.append(frontend_url)
 
-# Enable CORS for all routes and origins (for debugging)
-CORS(app, 
-     origins=['*'],  # Allow all origins temporarily
-     methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-     allow_headers=['Content-Type', 'Authorization', 'Access-Control-Allow-Credentials'],
-     supports_credentials=True,
-     expose_headers=['Content-Range', 'X-Content-Range']
+# Configure CORS with the allowed origins
+CORS(
+    app,
+    resources={
+        r"/*": {
+            "origins": allowed_origins,
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization"],
+            "supports_credentials": True,
+            "expose_headers": ["Content-Range", "X-Content-Range"]
+        }
+    }
 )
-
-# Add CORS headers to all responses
-@app.after_request
-def after_request(response):
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
-    response.headers.add('Access-Control-Allow-Credentials', 'true')
-    return response
 
 # Health check route
 @app.route('/')
