@@ -32,10 +32,8 @@ allowed_origins = [
   'https://loopr-1.onrender.com',
   'https://major-project-btech-1.onrender.com',
   'https://major-project-btech.onrender.com',
-  'https://major-project-btech-1.onrender.com/dashboard',
   'https://fintrack-dashboard.netlify.app',
-  'https://fintrack-app.vercel.app',
-  '*'  # Allow all origins for development (remove in production)
+  'https://fintrack-app.vercel.app'
 ]
 
 # If a public base URL is set (e.g., http://192.168.1.60:5000),
@@ -57,23 +55,14 @@ frontend_url = os.getenv('FRONTEND_URL')
 if frontend_url:
     allowed_origins.append(frontend_url)
 
-# Enable CORS for all routes and origins (for debugging)
+# Enable CORS with specific allowed origins
 CORS(app, 
-     origins=['*'],  # Allow all origins temporarily
+     origins=allowed_origins,
      methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
      allow_headers=['Content-Type', 'Authorization', 'Access-Control-Allow-Credentials'],
      supports_credentials=True,
      expose_headers=['Content-Range', 'X-Content-Range']
 )
-
-# Add CORS headers to all responses
-@app.after_request
-def after_request(response):
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
-    response.headers.add('Access-Control-Allow-Credentials', 'true')
-    return response
 
 # Health check route
 @app.route('/')
