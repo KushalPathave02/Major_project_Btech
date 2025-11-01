@@ -24,19 +24,16 @@ app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER', os.getenv('
 
 mail = Mail(app)
 
-# Middleware
-allowed_origins = [
-  'http://localhost:3000',
-  'http://127.0.0.1:3000',
-  'http://localhost:3001',
-  'https://loopr-1.onrender.com',
-  'https://major-project-btech-1.onrender.com',
-  'https://major-project-btech.onrender.com',
-  'https://major-project-btech-1.onrender.com/dashboard',
-  'https://fintrack-dashboard.netlify.app',
-  'https://fintrack-app.vercel.app',
-  '*'  # Allow all origins for development (remove in production)
-]
+# CORS Configuration
+# Only allow your production frontend domain
+CORS(app, resources={
+    r"/*": {
+        "origins": ["https://major-project-btech-1.onrender.com"],
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"],
+        "supports_credentials": True
+    }
+})
 
 # If a public base URL is set (e.g., http://192.168.1.60:5000),
 # also allow that origin and its :3000 counterpart for the client.

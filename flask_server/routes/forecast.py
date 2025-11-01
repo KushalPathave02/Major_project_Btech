@@ -28,7 +28,6 @@ def init_app(db_func):
     get_db = db_func
 
 @forecast_bp.route('/forecast/test', methods=['GET'])
-@cross_origin()
 def test_forecast():
     """Test endpoint to check LSTM availability"""
     return jsonify({
@@ -40,7 +39,6 @@ def test_forecast():
     })
 
 @forecast_bp.route('/forecast', methods=['GET'])
-@cross_origin()
 @token_required
 def get_forecast():
     try:
