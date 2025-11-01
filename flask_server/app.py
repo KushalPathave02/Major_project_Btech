@@ -24,19 +24,27 @@ app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER', os.getenv('
 
 mail = Mail(app)
 
-# CORS Configuration
-# Allow both production and development frontend domains
+# Middleware
 allowed_origins = [
-    'https://major-project-btech-1.onrender.com',
-    'http://localhost:3000',  # For local development
-    'http://127.0.0.1:3000'   # For local development
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  'http://localhost:3001',
+  'https://loopr-1.onrender.com',
+  'https://major-project-btech-1.onrender.com',
+  'https://major-project-btech.onrender.com',
+  'https://major-project-btech-1.onrender.com/dashboard',
+  'https://fintrack-dashboard.netlify.app',
+  'https://fintrack-app.vercel.app',
+  '*'  # Allow all origins for development (remove in production)
 ]
 
-# Add public base URL if set (for local network access)
+# If a public base URL is set (e.g., http://192.168.1.60:5000),
+# also allow that origin and its :3000 counterpart for the client.
 public_base = os.getenv('APP_PUBLIC_BASE_URL')
 if public_base:
     allowed_origins.append(public_base)
     try:
+        # Derive LAN host to allow :3000 frontend
         import urllib.parse as _urlparse
         parsed = _urlparse.urlparse(public_base)
         if parsed.scheme and parsed.hostname:
@@ -44,24 +52,28 @@ if public_base:
     except Exception:
         pass
 
-# Add frontend URL from environment variable if set
+# Add Render frontend URL from environment variable
 frontend_url = os.getenv('FRONTEND_URL')
-if frontend_url and frontend_url not in allowed_origins:
+if frontend_url:
     allowed_origins.append(frontend_url)
 
-# Configure CORS with the allowed origins
-CORS(
-    app,
-    resources={
-        r"/*": {
-            "origins": allowed_origins,
-            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-            "allow_headers": ["Content-Type", "Authorization"],
-            "supports_credentials": True,
-            "expose_headers": ["Content-Range", "X-Content-Range"]
-        }
-    }
+# Enable CORS for all routes and origins (for debugging)
+CORS(app, 
+     origins=['*'],  # Allow all origins temporarily
+     methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+     allow_headers=['Content-Type', 'Authorization', 'Access-Control-Allow-Credentials'],
+     supports_credentials=True,
+     expose_headers=['Content-Range', 'X-Content-Range']
 )
+
+# Add CORS headers to all responses
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    response.headers.add('Access-Control-Allow-Credentials', 'true')
+    return response
 
 # Health check route
 @app.route('/')
@@ -86,7 +98,6 @@ from database import get_db as get_db_func
 from routes.forecast import init_app as init_forecast
 init_forecast(get_db_func)
 
-# Register blueprints with CORS
 app.register_blueprint(auth_bp)
 app.register_blueprint(dashboard_bp)
 app.register_blueprint(transactions_bp)
@@ -97,18 +108,7 @@ app.register_blueprint(gemini_bp)
 app.register_blueprint(settings_bp)
 app.register_blueprint(users_bp)
 app.register_blueprint(wallet_bp)
-
-# Register forecast blueprint with URL prefix and CORS settings
-app.register_blueprint(
-    forecast_bp,
-    url_prefix='/api',
-    subdomain=None,
-    url_defaults=None,
-    static_folder=None,
-    static_url_path=None,
-    template_folder='templates',
-    root_path=None
-)
+app.register_blueprint(forecast_bp)
 
 from flask import send_from_directory
 

@@ -33,12 +33,10 @@ const ForecastChart: React.FC = () => {
       try {
         setLoading(true);
         const token = localStorage.getItem('token');
-        const res = await fetch(`${API_URL}/api/forecast`, {
+        const res = await fetch(`${API_URL}/forecast`, {
           headers: {
-            'Authorization': token ? `Bearer ${token}` : '',
-            'Content-Type': 'application/json',
+            Authorization: token ? `Bearer ${token}` : '',
           },
-          credentials: 'include'
         });
         const json: ForecastResponse = await res.json();
         if (!res.ok) {

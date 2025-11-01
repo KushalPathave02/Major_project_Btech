@@ -1,12 +1,12 @@
-from flask import Blueprint, jsonify, current_app, request
+from flask import Blueprint, jsonify, current_app
 from flask import g
+from flask_cors import cross_origin
 from bson import ObjectId
 from datetime import datetime, timedelta
 import pandas as pd
 import numpy as np
 import os
 import json
-from functools import wraps
 from sklearn.preprocessing import MinMaxScaler
 from middleware import token_required
 
@@ -27,40 +27,22 @@ def init_app(db_func):
     global get_db
     get_db = db_func
 
-def add_cors_headers(response):
-    """Add CORS headers to the response"""
-    response.headers.add('Access-Control-Allow-Origin', 'https://major-project-btech-1.onrender.com')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-    response.headers.add('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-    response.headers.add('Access-Control-Allow-Credentials', 'true')
-    return response
-
-def handle_options_request():
-    """Handle OPTIONS request for CORS preflight"""
-    response = jsonify({'status': 'success', 'message': 'CORS preflight successful'})
-    return add_cors_headers(response), 200
-
-@forecast_bp.route('/test', methods=['GET', 'OPTIONS'])
+@forecast_bp.route('/forecast/test', methods=['GET'])
+@cross_origin()
 def test_forecast():
     """Test endpoint to check LSTM availability"""
-    if request.method == 'OPTIONS':
-        return handle_options_request()
-        
-    response = jsonify({
+    return jsonify({
         'status': 'ok',
         'tensorflow_available': TENSORFLOW_AVAILABLE,
         'message': 'Forecast service is running',
         'lstm_ready': TENSORFLOW_AVAILABLE,
-        'endpoint': '/api/forecast'
+        'endpoint': '/forecast'
     })
 
-@forecast_bp.route('/forecast', methods=['GET', 'OPTIONS'])
+@forecast_bp.route('/forecast', methods=['GET'])
+@cross_origin()
 @token_required
 def get_forecast():
-    # Handle preflight request
-    if request.method == 'OPTIONS':
-        return handle_options_request()
-        
     try:
         print("🔍 Forecast endpoint called...")
         print(f"📊 TensorFlow Available: {TENSORFLOW_AVAILABLE}")
