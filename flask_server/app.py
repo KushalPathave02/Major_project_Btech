@@ -96,7 +96,8 @@ app.register_blueprint(gemini_bp)
 app.register_blueprint(settings_bp)
 app.register_blueprint(users_bp)
 app.register_blueprint(wallet_bp)
-app.register_blueprint(forecast_bp)
+# Register forecast blueprint with URL prefix
+app.register_blueprint(forecast_bp, url_prefix='/api')
 
 from flask import send_from_directory
 
