@@ -14,7 +14,7 @@ interface ForecastResponse {
 const ForecastCombinedCard: React.FC = () => {
   const [series, setSeries] = useState<Array<ForecastPoint & { type: 'Actual' | 'Forecast' }>>([]);
   const [loading, setLoading] = useState(true);
-  const [info, setInfo] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>('Loading forecast data...');
   const [tab, setTab] = useState(0); // 0: Line, 1: Bar
   const { formatCurrency } = useCurrency();
 
@@ -25,7 +25,13 @@ const ForecastCombinedCard: React.FC = () => {
       try {
         setLoading(true);
         const token = localStorage.getItem('token');
-        const res = await fetch(`${API_URL}/forecast`, { headers: { Authorization: token ? `Bearer ${token}` : '' } });
+        const res = await fetch(`${API_URL}/api/forecast`, { 
+          headers: { 
+            'Authorization': token ? `Bearer ${token}` : '',
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include'
+        });
         const json: ForecastResponse = await res.json();
         if (!res.ok) throw new Error(json.error || json.message || 'Failed to fetch forecast');
         const s: Array<ForecastPoint & { type: 'Actual' | 'Forecast' }> = [];

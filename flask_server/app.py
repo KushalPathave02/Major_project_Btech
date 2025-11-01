@@ -86,6 +86,7 @@ from database import get_db as get_db_func
 from routes.forecast import init_app as init_forecast
 init_forecast(get_db_func)
 
+# Register blueprints with CORS
 app.register_blueprint(auth_bp)
 app.register_blueprint(dashboard_bp)
 app.register_blueprint(transactions_bp)
@@ -96,8 +97,18 @@ app.register_blueprint(gemini_bp)
 app.register_blueprint(settings_bp)
 app.register_blueprint(users_bp)
 app.register_blueprint(wallet_bp)
-# Register forecast blueprint with URL prefix
-app.register_blueprint(forecast_bp, url_prefix='/api')
+
+# Register forecast blueprint with URL prefix and CORS settings
+app.register_blueprint(
+    forecast_bp,
+    url_prefix='/api',
+    subdomain=None,
+    url_defaults=None,
+    static_folder=None,
+    static_url_path=None,
+    template_folder='templates',
+    root_path=None
+)
 
 from flask import send_from_directory
 
