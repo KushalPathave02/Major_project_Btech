@@ -70,6 +70,42 @@ def demo_forecast():
             'message': 'Demo forecast failed'
         }), 500
 
+@forecast_bp.route('/forecast/public', methods=['GET'])
+def public_forecast():
+    """Public forecast endpoint for testing (no auth required)"""
+    try:
+        print("🔍 Public forecast endpoint called...")
+        print(f"📊 TensorFlow Available: {TENSORFLOW_AVAILABLE}")
+        
+        # Return demo data for now - you can modify this later
+        sample_data = [
+            {'month': '2024-08', 'expense': 1500.0},
+            {'month': '2024-09', 'expense': 1600.0},
+            {'month': '2024-10', 'expense': 1450.0},
+            {'month': '2024-11', 'expense': 1700.0}
+        ]
+        
+        # Simple forecast
+        recent_expenses = [1600.0, 1450.0, 1700.0]  # Last 3 months
+        forecast_value = sum(recent_expenses) / len(recent_expenses)
+        
+        return jsonify({
+            'history': sample_data,
+            'forecast': {
+                'month': '2024-12',
+                'expense': round(forecast_value, 2)
+            },
+            'message': 'Public forecast endpoint working - authentication not required',
+            'method': 'moving_average',
+            'tensorflow_available': TENSORFLOW_AVAILABLE
+        })
+    except Exception as e:
+        print(f"❌ Error in public forecast: {str(e)}")
+        return jsonify({
+            'error': f'Public forecast error: {str(e)}',
+            'message': 'Public forecast failed'
+        }), 500
+
 @forecast_bp.route('/forecast', methods=['GET'])
 @token_required
 def get_forecast():
