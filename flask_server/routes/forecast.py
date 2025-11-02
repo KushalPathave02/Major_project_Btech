@@ -37,12 +37,54 @@ def test_forecast():
         'endpoint': '/forecast'
     })
 
+@forecast_bp.route('/forecast/demo', methods=['GET'])
+def demo_forecast():
+    """Demo endpoint with sample data for testing"""
+    try:
+        # Sample monthly expenses data
+        sample_data = [
+            {'month': '2024-01', 'expense': 1500.0},
+            {'month': '2024-02', 'expense': 1600.0},
+            {'month': '2024-03', 'expense': 1450.0},
+            {'month': '2024-04', 'expense': 1700.0},
+            {'month': '2024-05', 'expense': 1550.0},
+            {'month': '2024-06', 'expense': 1650.0}
+        ]
+        
+        # Simple moving average of last 3 months
+        recent_expenses = [1700.0, 1550.0, 1650.0]  # Last 3 months
+        forecast_value = sum(recent_expenses) / len(recent_expenses)
+        
+        return jsonify({
+            'history': sample_data,
+            'forecast': {
+                'month': '2024-07',
+                'expense': round(forecast_value, 2)
+            },
+            'message': 'Demo forecast with sample data',
+            'method': 'moving_average_demo'
+        })
+    except Exception as e:
+        return jsonify({
+            'error': f'Demo error: {str(e)}',
+            'message': 'Demo forecast failed'
+        }), 500
+
 @forecast_bp.route('/forecast', methods=['GET'])
 @token_required
 def get_forecast():
     try:
         print("🔍 Forecast endpoint called...")
         print(f"📊 TensorFlow Available: {TENSORFLOW_AVAILABLE}")
+        
+        # Early check for database connection
+        if get_db is None:
+            print("❌ Database connection not initialized")
+            return jsonify({
+                'error': 'Database connection not available',
+                'history': [],
+                'forecast': None
+            }), 500
         # Per-user transactions only; no global file fallback to avoid leaking data
         db = get_db()
         user_id = g.user_id
@@ -116,13 +158,23 @@ def get_forecast():
                 'message': 'Need at least 6 months of data for LSTM forecasting'
             })
         
-        # Check if TensorFlow is available
+        # Check if TensorFlow is available - if not, use simple forecasting
         if not TENSORFLOW_AVAILABLE:
+            print("⚠️ TensorFlow not available, using simple moving average forecast")
+            # Simple moving average forecast (last 3 months average)
+            recent_values = monthly_expenses.tail(min(3, len(monthly_expenses))).values
+            forecast_value = float(np.mean(recent_values))
+            next_month = monthly_expenses.index[-1] + 1
+            
             return jsonify({
-                'error': 'TensorFlow not available for LSTM forecasting',
                 'history': [{'month': str(m), 'expense': float(v)} for m, v in monthly_expenses.items()],
-                'forecast': None
-            }), 500
+                'forecast': {
+                    'month': str(next_month),
+                    'expense': forecast_value
+                },
+                'message': 'Simple moving average forecast (TensorFlow not available)',
+                'method': 'moving_average'
+            })
         
         # Convert to numeric values for LSTM
         y = monthly_expenses.astype(float).values
@@ -197,7 +249,14 @@ def get_forecast():
             }), 500
             
     except Exception as e:
+        print(f"❌ Critical error in forecast endpoint: {str(e)}")
+        import traceback
+        print(f"❌ Traceback: {traceback.format_exc()}")
         return jsonify({
             'error': f'Server error: {str(e)}',
-            'message': 'Failed to generate forecast'
+            'message': 'Failed to generate forecast',
+            'debug': {
+                'tensorflow_available': TENSORFLOW_AVAILABLE,
+                'error_type': type(e).__name__
+            }
         }), 500
