@@ -115,6 +115,39 @@ def login():
     return jsonify({'message': 'Invalid credentials'}), 401
 
 
+@auth_bp.route('/api/auth/test-email', methods=['GET'])
+def test_email():
+    """Test email configuration"""
+    try:
+        email_user = os.getenv('SMTP_EMAIL')
+        email_pass = os.getenv('SMTP_PASSWORD')
+        
+        if not email_user or not email_pass:
+            return jsonify({
+                'status': 'error',
+                'message': 'Email credentials not configured',
+                'smtp_email': email_user,
+                'smtp_password_set': bool(email_pass)
+            }), 400
+        
+        # Send test email
+        test_link = "https://example.com/test"
+        success, message = send_verification_email(email_user, "Test User", test_link)
+        
+        return jsonify({
+            'status': 'success' if success else 'error',
+            'message': message,
+            'smtp_email': email_user,
+            'test_sent_to': email_user
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': f'Test failed: {str(e)}',
+            'error_type': type(e).__name__
+        }), 500
+
 @auth_bp.route('/api/auth/verify/<token>', methods=['GET'])
 def verify_email(token):
     """Verify email using time-limited token (1 hour)."""
