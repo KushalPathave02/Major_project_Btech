@@ -12,15 +12,15 @@ app = Flask(__name__)
 app.config['MONGO_URI'] = os.getenv('MONGO_URI')
 database.init_app(app)
 app.config['UPLOAD_FOLDER'] = 'uploads'
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'a_default_secret_key')
+app.config['SECRET_KEY'] = os.getenv('JWT_SECRET', os.getenv('SECRET_KEY', 'a_default_secret_key'))
 
 # Mail configuration (use free Gmail SMTP for dev). Set these in .env
-app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
-app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', '587'))
+app.config['MAIL_SERVER'] = os.getenv('SMTP_HOST', 'smtp.gmail.com')
+app.config['MAIL_PORT'] = int(os.getenv('SMTP_PORT', '587'))
 app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', 'true').lower() == 'true'
-app.config['MAIL_USERNAME'] = os.getenv('EMAIL_USER', '')
-app.config['MAIL_PASSWORD'] = os.getenv('EMAIL_PASS', '')
-app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER', os.getenv('EMAIL_USER', ''))
+app.config['MAIL_USERNAME'] = os.getenv('SMTP_EMAIL', '')
+app.config['MAIL_PASSWORD'] = os.getenv('SMTP_PASSWORD', '')
+app.config['MAIL_DEFAULT_SENDER'] = os.getenv('FROM_EMAIL', os.getenv('SMTP_EMAIL', ''))
 
 mail = Mail(app)
 

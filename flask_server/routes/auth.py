@@ -51,8 +51,8 @@ def register():
         verify_link = url_for('auth.verify_email', token=token, _external=True)
 
     # Check if email is configured
-    email_user = os.getenv('EMAIL_USER')
-    email_pass = os.getenv('EMAIL_PASS')
+    email_user = os.getenv('SMTP_EMAIL')
+    email_pass = os.getenv('SMTP_PASSWORD')
     
     if email_user and email_pass:
         # Send verification email using improved email service

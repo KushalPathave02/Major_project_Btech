@@ -22,19 +22,20 @@ def send_verification_email(recipient_email, name, verify_link):
 
 def send_gmail_smtp(recipient_email, name, verify_link):
     """Send email via Gmail SMTP"""
-    smtp_server = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
-    smtp_port = int(os.getenv('MAIL_PORT', 587))
-    email_user = os.getenv('EMAIL_USER')
-    email_pass = os.getenv('EMAIL_PASS')
+    smtp_server = os.getenv('SMTP_HOST', 'smtp.gmail.com')
+    smtp_port = int(os.getenv('SMTP_PORT', 587))
+    email_user = os.getenv('SMTP_EMAIL')
+    email_pass = os.getenv('SMTP_PASSWORD')
+    from_name = os.getenv('FROM_NAME', 'FinTrack')
     
     if not email_user or not email_pass:
         raise Exception("Gmail credentials not configured")
     
     # Create message
     msg = MIMEMultipart('alternative')
-    msg['From'] = email_user
+    msg['From'] = f"{from_name} <{email_user}>"
     msg['To'] = recipient_email
-    msg['Subject'] = "Verify your email - FinTrack"
+    msg['Subject'] = f"Verify your email - {from_name}"
     
     # Plain text version
     text_body = f"""
