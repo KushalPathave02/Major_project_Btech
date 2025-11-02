@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request, make_response
 from flask_cors import CORS
 from flask_mail import Mail
 import os
@@ -32,6 +32,9 @@ allowed_origins = [
   'https://loopr-1.onrender.com',
   'https://major-project-btech-1.onrender.com',
   'https://major-project-btech.onrender.com',
+  'https://major-project-btech-backend.onrender.com',
+  'https://fintrack-dashboard.netlify.app',
+  'https://fintrack-app.vercel.app'
 ]
 
 # If a public base URL is set (e.g., http://192.168.1.60:5000),
@@ -61,6 +64,16 @@ CORS(app,
      supports_credentials=True,
      expose_headers=['Content-Range', 'X-Content-Range']
 )
+
+# Handle preflight requests
+@app.before_request
+def handle_preflight():
+    if request.method == "OPTIONS":
+        response = make_response()
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add('Access-Control-Allow-Headers', "*")
+        response.headers.add('Access-Control-Allow-Methods', "*")
+        return response
 
 # Health check route
 @app.route('/')
