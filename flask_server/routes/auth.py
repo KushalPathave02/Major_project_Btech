@@ -38,8 +38,14 @@ def register():
         'is_verified': False
     }
     
-    result = db.users.insert_one(user_data)
-    user_data['_id'] = result.inserted_id
+    try:
+        print(f"💾 Attempting to save user to database: {email}")
+        result = db.users.insert_one(user_data)
+        user_data['_id'] = result.inserted_id
+        print(f"✅ User saved successfully with ID: {result.inserted_id}")
+    except Exception as db_error:
+        print(f"❌ Database save failed: {str(db_error)}")
+        return jsonify({'message': f'Database error: {str(db_error)}'}), 500
 
     # Build verification link first
     serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])

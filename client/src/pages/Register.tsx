@@ -24,12 +24,18 @@ const handleSubmit = async (e: React.FormEvent) => {
       return;
     }
     try {
+      console.log('🚀 Sending registration request to:', `${API_URL}/api/auth/register`);
+      console.log('📝 Registration data:', { name, email, password: '***' });
+      
       const res = await fetch(`${API_URL}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password })
       });
+      
+      console.log('📡 Response status:', res.status, res.statusText);
       const data = await res.json();
+      console.log('📦 Response data:', data);
       if (res.ok) {
         setSuccess(true);
         // Check if email was sent or if manual verification is needed
@@ -51,10 +57,12 @@ const handleSubmit = async (e: React.FormEvent) => {
           navigate('/login');
         }, 2000);
       } else {
+        console.error('❌ Registration failed:', data);
         setError(data.message || 'Registration failed');
       }
-    } catch (err) {
-      setError('Network error');
+    } catch (err: any) {
+      console.error('❌ Network error:', err);
+      setError(`Network error: ${err.message || 'Unable to connect to server'}`);
     }
     setLoading(false);
   };
