@@ -27,6 +27,12 @@ def send_gmail_smtp(recipient_email, name, verify_link):
     email_user = os.getenv('EMAIL_USER')
     email_pass = os.getenv('EMAIL_PASS')
     
+    print(f"📧 Email Service Debug:")
+    print(f"   Server: {smtp_server}:{smtp_port}")
+    print(f"   From: {email_user}")
+    print(f"   To: {recipient_email}")
+    print(f"   Pass: {'*' * len(email_pass) if email_pass else 'None'}")
+    
     if not email_user or not email_pass:
         raise Exception("Gmail credentials not configured")
     
@@ -146,12 +152,21 @@ def send_gmail_smtp(recipient_email, name, verify_link):
     msg.attach(MIMEText(html_body, 'html'))
     
     # Send email with timeout
-    with smtplib.SMTP(smtp_server, smtp_port, timeout=10) as server:
-        server.starttls()
-        server.login(email_user, email_pass)
-        server.send_message(msg)
-    
-    return True, "Email sent successfully"
+    try:
+        print(f"📤 Attempting to send email...")
+        with smtplib.SMTP(smtp_server, smtp_port, timeout=10) as server:
+            print(f"📡 Connected to SMTP server")
+            server.starttls()
+            print(f"🔒 TLS started")
+            server.login(email_user, email_pass)
+            print(f"✅ Login successful")
+            server.send_message(msg)
+            print(f"📧 Email sent successfully!")
+        
+        return True, "Email sent successfully"
+    except Exception as e:
+        print(f"❌ Email sending failed: {str(e)}")
+        raise e
 
 def send_alternative_smtp(recipient_email, name, verify_link):
     """Alternative SMTP service (can be configured for SendGrid, Mailgun, etc.)"""

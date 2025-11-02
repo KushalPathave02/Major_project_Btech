@@ -54,6 +54,8 @@ def register():
     email_user = os.getenv('EMAIL_USER')
     email_pass = os.getenv('EMAIL_PASS')
     
+    print(f"🔍 Email Debug - USER: {email_user}, PASS: {'*' * len(email_pass) if email_pass else 'None'}")
+    
     if email_user and email_pass:
         # Send verification email using improved email service
         try:
