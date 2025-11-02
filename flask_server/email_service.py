@@ -166,6 +166,45 @@ def send_gmail_smtp(recipient_email, name, verify_link):
         raise e
 
 def send_alternative_smtp(recipient_email, name, verify_link):
-    """Alternative SMTP service (can be configured for SendGrid, Mailgun, etc.)"""
-    # For now, just raise exception - can be implemented later
-    raise Exception("Alternative SMTP not configured")
+    """Alternative SMTP service using SendGrid"""
+    import requests
+    
+    # SendGrid API (Free: 100 emails/day)
+    sendgrid_api_key = os.getenv('SENDGRID_API_KEY')
+    if not sendgrid_api_key:
+        raise Exception("SendGrid API key not configured")
+    
+    from_email = os.getenv('FROM_EMAIL', 'kushalpathave53@gmail.com')
+    from_name = os.getenv('FROM_NAME', 'FinTrack')
+    
+    # SendGrid API call
+    url = "https://api.sendgrid.com/v3/mail/send"
+    headers = {
+        "Authorization": f"Bearer {sendgrid_api_key}",
+        "Content-Type": "application/json"
+    }
+    
+    data = {
+        "personalizations": [{
+            "to": [{"email": recipient_email}],
+            "subject": f"Verify your email - {from_name}"
+        }],
+        "from": {"email": from_email, "name": from_name},
+        "content": [{
+            "type": "text/html",
+            "value": f"""
+            <h2>Welcome to {from_name}, {name}!</h2>
+            <p>Please verify your email by clicking the link below:</p>
+            <a href="{verify_link}" style="background: #7c3aed; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px;">Verify Email</a>
+            <p>Or copy this link: {verify_link}</p>
+            <p>This link expires in 1 hour.</p>
+            """
+        }]
+    }
+    
+    response = requests.post(url, json=data, headers=headers)
+    
+    if response.status_code == 202:
+        return True, "Email sent via SendGrid"
+    else:
+        raise Exception(f"SendGrid failed: {response.status_code} - {response.text}")

@@ -33,10 +33,10 @@ const handleSubmit = async (e: React.FormEvent) => {
       if (res.ok) {
         setSuccess(true);
         // Check if email was sent or if manual verification is needed
-        if (data.verify_link && data.email_error) {
-          // Email service not configured or failed - show manual verification link
+        if (data.verify_link && (data.email_error || data.message.includes('unavailable'))) {
+          // Email service failed - show manual verification link
           const userConfirmed = window.confirm(
-            `Registration successful! Email service is not configured.\n\nWould you like to verify your account now?\n\nClick OK to verify, or Cancel to verify later from login page.`
+            `Registration successful!\n\nEmail service is currently unavailable on free hosting.\n\nWould you like to verify your account now?\n\nClick OK to verify, or Cancel to verify later.`
           );
           if (userConfirmed) {
             // Open verification link in new tab
