@@ -10,7 +10,6 @@ const Register: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [verifyLink, setVerifyLink] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const API_URL = process.env.REACT_APP_API_URL;
@@ -33,17 +32,11 @@ const handleSubmit = async (e: React.FormEvent) => {
       const data = await res.json();
       if (res.ok) {
         setSuccess(true);
-        // Redirect to verification page with registration data
+        // Show success message and redirect to login
+        alert(`Registration successful! Please check your email (${email}) for verification link. After verification, you can login.`);
         setTimeout(() => {
-          navigate('/verify-email', {
-            state: {
-              email: email,
-              name: name,
-              verify_link: data.verify_link,
-              message: data.message
-            }
-          });
-        }, 1500);
+          navigate('/login');
+        }, 2000);
       } else {
         setError(data.message || 'Registration failed');
       }

@@ -32,7 +32,6 @@ function App() {
           <Routes>
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/verify/:token" element={<VerifyEmail />} />
         <Route path="/dashboard" element={
           <ProtectedRoute>
