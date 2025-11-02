@@ -137,8 +137,13 @@ fetch(`${API_URL}/users/profile`, {
               </ListItem>
             ))}
             <ListItem button onClick={() => {
-              localStorage.removeItem('token');
-              navigate('/login');
+              // Logout confirmation alert
+              const confirmLogout = window.confirm('Are you sure you want to logout?');
+              if (confirmLogout) {
+                localStorage.removeItem('token');
+                alert('You have been logged out successfully!');
+                navigate('/login');
+              }
             }}>
               <ListItemIcon sx={{ color: theme === 'dark' ? '#b0b8d1' : '#5d5d7c' }}><LogoutIcon /></ListItemIcon>
               <ListItemText primary="Logout" />
