@@ -50,26 +50,38 @@ def register():
     else:
         verify_link = url_for('auth.verify_email', token=token, _external=True)
 
-    # Send verification email using improved email service
-    try:
-        success, message = send_verification_email(email, name, verify_link)
-        
-        if success:
-            return jsonify({
-                'message': 'Registration successful. Check your email for verification link.', 
-                'verify_link': verify_link
-            }), 201
-        else:
-            # Email failed but user is registered - return success with manual verification link
-            return jsonify({
-                'message': 'Registration successful! Email sending failed, but you can verify manually.',
-                'verify_link': verify_link,
-                'email_error': message
-            }), 201
-        
-    except Exception as e:
-        # Do not fail registration if email fails; include verify_link for dev convenience
-        return jsonify({'message': 'User registered. Failed to send verification email.', 'verify_link': verify_link, 'email_error': str(e)}), 201
+    # Check if email is configured
+    email_user = os.getenv('EMAIL_USER')
+    email_pass = os.getenv('EMAIL_PASS')
+    
+    if email_user and email_pass:
+        # Send verification email using improved email service
+        try:
+            success, message = send_verification_email(email, name, verify_link)
+            
+            if success:
+                return jsonify({
+                    'message': 'Registration successful. Check your email for verification link.', 
+                    'verify_link': verify_link
+                }), 201
+            else:
+                # Email failed but user is registered - return success with manual verification link
+                return jsonify({
+                    'message': 'Registration successful! Email sending failed, but you can verify manually.',
+                    'verify_link': verify_link,
+                    'email_error': message
+                }), 201
+            
+        except Exception as e:
+            # Do not fail registration if email fails; include verify_link for dev convenience
+            return jsonify({'message': 'User registered. Failed to send verification email.', 'verify_link': verify_link, 'email_error': str(e)}), 201
+    else:
+        # Email not configured - return success with verification link for manual verification
+        return jsonify({
+            'message': 'Registration successful! Email service not configured. Use this link to verify:', 
+            'verify_link': verify_link,
+            'email_error': 'Email service not configured'
+        }), 201
 
 @auth_bp.route('/api/auth/login', methods=['POST'])
 def login():

@@ -32,8 +32,21 @@ const handleSubmit = async (e: React.FormEvent) => {
       const data = await res.json();
       if (res.ok) {
         setSuccess(true);
-        // Show success message and redirect to login
-        alert(`Registration successful! Please check your email (${email}) for verification link. After verification, you can login.`);
+        // Check if email was sent or if manual verification is needed
+        if (data.verify_link && data.email_error) {
+          // Email service not configured or failed - show manual verification link
+          const userConfirmed = window.confirm(
+            `Registration successful! Email service is not configured.\n\nWould you like to verify your account now?\n\nClick OK to verify, or Cancel to verify later from login page.`
+          );
+          if (userConfirmed) {
+            // Open verification link in new tab
+            window.open(data.verify_link, '_blank');
+          }
+        } else {
+          // Email sent successfully
+          alert(`Registration successful! Please check your email (${email}) for verification link. After verification, you can login.`);
+        }
+        
         setTimeout(() => {
           navigate('/login');
         }, 2000);

@@ -241,24 +241,28 @@ def get_forecast():
             # Reshape for LSTM [samples, time steps, features]
             X = X.reshape((X.shape[0], X.shape[1], 1))
             
-            # Build LSTM model
+            # Build lightweight LSTM model for memory efficiency
             model = keras.Sequential([
                 layers.Input(shape=(WINDOW_SIZE, 1)),
-                layers.LSTM(50, return_sequences=True),
-                layers.LSTM(50),
-                layers.Dense(25),
+                layers.LSTM(20, return_sequences=False),  # Reduced from 50 to 20, removed second LSTM
+                layers.Dense(10),                         # Reduced from 25 to 10
                 layers.Dense(1)
             ])
             
             model.compile(optimizer='adam', loss='mse')
             
-            # Train model (with minimal epochs for speed)
-            model.fit(X, y_target, epochs=50, batch_size=1, verbose=0)
+            # Train model (with minimal epochs for memory efficiency)
+            model.fit(X, y_target, epochs=10, batch_size=1, verbose=0)
             
             # Forecast next month
             last_sequence = y_scaled[-WINDOW_SIZE:].reshape(1, WINDOW_SIZE, 1)
             forecast_scaled = model.predict(last_sequence, verbose=0)
             forecast_value = scaler.inverse_transform(forecast_scaled)[0][0]
+            
+            # Clean up memory
+            del model, X, y_target, y_scaled, last_sequence, forecast_scaled
+            import gc
+            gc.collect()
             
             next_month = monthly_expenses.index[-1] + 1
             
