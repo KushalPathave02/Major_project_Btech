@@ -38,14 +38,8 @@ def register():
         'is_verified': False
     }
     
-    try:
-        print(f"💾 Attempting to save user to database: {email}")
-        result = db.users.insert_one(user_data)
-        user_data['_id'] = result.inserted_id
-        print(f"✅ User saved successfully with ID: {result.inserted_id}")
-    except Exception as db_error:
-        print(f"❌ Database save failed: {str(db_error)}")
-        return jsonify({'message': f'Database error: {str(db_error)}'}), 500
+    result = db.users.insert_one(user_data)
+    user_data['_id'] = result.inserted_id
 
     # Build verification link first
     serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
@@ -59,8 +53,6 @@ def register():
     # Check if email is configured
     email_user = os.getenv('EMAIL_USER')
     email_pass = os.getenv('EMAIL_PASS')
-    
-    print(f"🔍 Email Debug - USER: {email_user}, PASS: {'*' * len(email_pass) if email_pass else 'None'}")
     
     if email_user and email_pass:
         # Send verification email using improved email service

@@ -21,28 +21,20 @@ def send_verification_email(recipient_email, name, verify_link):
             return False, f"Email services unavailable: {str(gmail_error)}"
 
 def send_gmail_smtp(recipient_email, name, verify_link):
-    """Send email via Gmail SMTP using Flask-Mail"""
-    from flask import current_app
-    from flask_mail import Message
-    
-    # Get Flask-Mail configuration
-    email_user = current_app.config.get('MAIL_USERNAME') or os.getenv('EMAIL_USER')
-    email_pass = current_app.config.get('MAIL_PASSWORD') or os.getenv('EMAIL_PASS')
-    
-    print(f"📧 Email Service Debug:")
-    print(f"   From: {email_user}")
-    print(f"   To: {recipient_email}")
-    print(f"   Pass: {'*' * len(email_pass) if email_pass else 'None'}")
+    """Send email via Gmail SMTP"""
+    smtp_server = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
+    smtp_port = int(os.getenv('MAIL_PORT', 587))
+    email_user = os.getenv('EMAIL_USER')
+    email_pass = os.getenv('EMAIL_PASS')
     
     if not email_user or not email_pass:
         raise Exception("Gmail credentials not configured")
     
-    # Create Flask-Mail message
-    msg = Message(
-        subject="Verify your email - FinTrack",
-        sender=email_user,
-        recipients=[recipient_email]
-    )
+    # Create message
+    msg = MIMEMultipart('alternative')
+    msg['From'] = email_user
+    msg['To'] = recipient_email
+    msg['Subject'] = "Verify your email - FinTrack"
     
     # Plain text version
     text_body = f"""
@@ -149,21 +141,17 @@ def send_gmail_smtp(recipient_email, name, verify_link):
     </html>
     """
     
-    # Set message body (Flask-Mail handles both text and HTML)
-    msg.body = text_body
-    msg.html = html_body
+    # Attach both versions
+    msg.attach(MIMEText(text_body, 'plain'))
+    msg.attach(MIMEText(html_body, 'html'))
     
-    # Send email using Flask-Mail
-    try:
-        print(f"📤 Attempting to send email using Flask-Mail...")
-        from app import mail  # Import mail instance
-        mail.send(msg)
-        print(f"📧 Email sent successfully via Flask-Mail!")
-        
-        return True, "Email sent successfully"
-    except Exception as e:
-        print(f"❌ Email sending failed: {str(e)}")
-        raise e
+    # Send email with timeout
+    with smtplib.SMTP(smtp_server, smtp_port, timeout=10) as server:
+        server.starttls()
+        server.login(email_user, email_pass)
+        server.send_message(msg)
+    
+    return True, "Email sent successfully"
 
 def send_alternative_smtp(recipient_email, name, verify_link):
     """Alternative SMTP service (can be configured for SendGrid, Mailgun, etc.)"""
