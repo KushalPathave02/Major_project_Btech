@@ -177,6 +177,9 @@ def send_alternative_smtp(recipient_email, name, verify_link):
     from_email = os.getenv('FROM_EMAIL', 'kushalpathave53@gmail.com')
     from_name = os.getenv('FROM_NAME', 'FinTrack')
     
+    print(f"📧 SendGrid Config - API Key: {sendgrid_api_key[:10]}...")
+    print(f"📧 From: {from_name} <{from_email}>")
+    
     # SendGrid API call
     url = "https://api.sendgrid.com/v3/mail/send"
     headers = {
