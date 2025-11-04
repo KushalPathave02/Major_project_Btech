@@ -50,11 +50,12 @@ def register():
     else:
         verify_link = url_for('auth.verify_email', token=token, _external=True)
 
-    # Check if email is configured
+    # Check if email is configured (SendGrid or SMTP)
+    sendgrid_api_key = os.getenv('SENDGRID_API_KEY')
     email_user = os.getenv('SMTP_EMAIL')
     email_pass = os.getenv('SMTP_PASSWORD')
     
-    if email_user and email_pass:
+    if sendgrid_api_key or (email_user and email_pass):
         # Send verification email using improved email service
         try:
             success, message = send_verification_email(email, name, verify_link)
@@ -119,26 +120,30 @@ def login():
 def test_email():
     """Test email configuration"""
     try:
+        sendgrid_api_key = os.getenv('SENDGRID_API_KEY')
         email_user = os.getenv('SMTP_EMAIL')
         email_pass = os.getenv('SMTP_PASSWORD')
         
-        if not email_user or not email_pass:
+        if not sendgrid_api_key and (not email_user or not email_pass):
             return jsonify({
                 'status': 'error',
-                'message': 'Email credentials not configured',
+                'message': 'Email service not configured (neither SendGrid nor SMTP)',
+                'sendgrid_configured': bool(sendgrid_api_key),
                 'smtp_email': email_user,
                 'smtp_password_set': bool(email_pass)
             }), 400
         
         # Send test email
+        test_email = os.getenv('FROM_EMAIL', 'kushalpathave53@gmail.com')
         test_link = "https://example.com/test"
-        success, message = send_verification_email(email_user, "Test User", test_link)
+        success, message = send_verification_email(test_email, "Test User", test_link)
         
         return jsonify({
             'status': 'success' if success else 'error',
             'message': message,
-            'smtp_email': email_user,
-            'test_sent_to': email_user
+            'sendgrid_configured': bool(sendgrid_api_key),
+            'smtp_configured': bool(email_user and email_pass),
+            'test_sent_to': test_email
         })
         
     except Exception as e:
