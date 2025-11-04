@@ -190,17 +190,87 @@ def send_alternative_smtp(recipient_email, name, verify_link):
     data = {
         "personalizations": [{
             "to": [{"email": recipient_email}],
-            "subject": f"Verify your email - {from_name}"
+            "subject": f"✅ Verify your email - {from_name}"
         }],
         "from": {"email": from_email, "name": from_name},
+        "reply_to": {"email": from_email, "name": from_name},
+        "categories": ["email-verification"],
+        "custom_args": {
+            "type": "verification",
+            "app": "fintrack"
+        },
         "content": [{
             "type": "text/html",
             "value": f"""
-            <h2>Welcome to {from_name}, {name}!</h2>
-            <p>Please verify your email by clicking the link below:</p>
-            <a href="{verify_link}" style="background: #7c3aed; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px;">Verify Email</a>
-            <p>Or copy this link: {verify_link}</p>
-            <p>This link expires in 1 hour.</p>
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Verify Your Email - {from_name}</title>
+            </head>
+            <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc;">
+                <div style="max-width: 600px; margin: 0 auto; background-color: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); overflow: hidden;">
+                    
+                    <!-- Header -->
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center;">
+                        <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 600;">
+                            Welcome to {from_name}! 🎉
+                        </h1>
+                        <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">
+                            Hi {name}, let's verify your email address
+                        </p>
+                    </div>
+                    
+                    <!-- Content -->
+                    <div style="padding: 40px 30px;">
+                        <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 30px 0;">
+                            Thank you for signing up! To complete your registration and start using {from_name}, please verify your email address by clicking the button below:
+                        </p>
+                        
+                        <!-- CTA Button -->
+                        <div style="text-align: center; margin: 40px 0;">
+                            <a href="{verify_link}" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4); transition: all 0.3s ease;">
+                                ✅ Verify My Email
+                            </a>
+                        </div>
+                        
+                        <!-- Alternative Link -->
+                        <div style="background-color: #f9fafb; border-radius: 8px; padding: 20px; margin: 30px 0;">
+                            <p style="color: #6b7280; font-size: 14px; margin: 0 0 10px 0;">
+                                If the button doesn't work, copy and paste this link in your browser:
+                            </p>
+                            <p style="word-break: break-all; color: #3b82f6; font-size: 14px; margin: 0;">
+                                {verify_link}
+                            </p>
+                        </div>
+                        
+                        <!-- Security Note -->
+                        <div style="border-left: 4px solid #fbbf24; background-color: #fffbeb; padding: 16px; margin: 30px 0; border-radius: 0 8px 8px 0;">
+                            <p style="color: #92400e; font-size: 14px; margin: 0; font-weight: 500;">
+                                🔒 Security Note: This verification link expires in 1 hour for your security.
+                            </p>
+                        </div>
+                        
+                        <!-- Help -->
+                        <p style="color: #6b7280; font-size: 14px; line-height: 1.5; margin: 30px 0 0 0;">
+                            Need help? Contact our support team or visit our help center.<br>
+                            This email was sent to you because you signed up for {from_name}.
+                        </p>
+                    </div>
+                    
+                    <!-- Footer -->
+                    <div style="background-color: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+                        <p style="color: #6b7280; font-size: 14px; margin: 0;">
+                            © 2024 {from_name}. All rights reserved.
+                        </p>
+                        <p style="color: #9ca3af; font-size: 12px; margin: 10px 0 0 0;">
+                            Financial Analytics Dashboard - Secure & Reliable
+                        </p>
+                    </div>
+                </div>
+            </body>
+            </html>
             """
         }]
     }
