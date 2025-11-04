@@ -9,3 +9,4 @@ This is a full-stack financial analytics dashboard project with authentication, 
 ## Getting Started
 
 See `server/README.md` and `client/README.md` for setup instructions.
+deploy At :- https://major-project-btech-1.onrender.com/
