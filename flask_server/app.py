@@ -86,7 +86,6 @@ from routes.dashboard import dashboard_bp
 from routes.transactions import transactions_bp
 from routes.export import export_bp
 from routes.analytics import analytics_bp
-from routes.gemini import gemini_bp
 from routes.settings import settings_bp
 from routes.users import users_bp
 from routes.wallet import wallet_bp
@@ -103,7 +102,6 @@ app.register_blueprint(transactions_bp)
 app.register_blueprint(export_bp)
 app.register_blueprint(analytics_bp)
 app.register_blueprint(gemini_bp)
-app.register_blueprint(settings_bp)
 app.register_blueprint(users_bp)
 app.register_blueprint(wallet_bp)
 app.register_blueprint(forecast_bp)
